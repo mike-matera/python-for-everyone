@@ -1,0 +1,12 @@
+jupyter
+jupyterlab
+flask
+numpy
+pandas
+toyplot
+requests
+calysto
+matplotlib
+scipy
+seaborn
+ipywidgets

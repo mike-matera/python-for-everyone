@@ -1,0 +1,4 @@
+{} are red, voilets are {}, file I/O is {} and so are you.
+noun
+color
+adjective
