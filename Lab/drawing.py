@@ -13,7 +13,7 @@ from PIL import Image
 class Pen:
     """A class that implements simple turtle-style graphics."""
 
-    _Scale = 10
+    _Scale = 1
     _TurtleIcon = Image.open(Path(__file__).parent / "turtle.png")
     _TurtleScale = 10
 
@@ -75,8 +75,15 @@ class Pen:
         self.strokes.append(Pen._stroke(self.current, self.strokes[-1]))
         self.strokes[-1].width = width
 
-    def show(self, turtle=True, size=(6, 6)):
-        """Show the current drawing."""
+    def show(self, turtle=True, arena=(-100, 100, -100, 100), size=(6, 6)):
+        """Show the current drawing and reset all drawing state. 
+        
+        Arguments:
+
+          turtle - (boolean) If True the turle will be visible in the output (default True)
+          arena - The coordinate space of the arena: [x_min, x_max, y_min, y_max] 
+          size - The size of the drawing in inches: [x_size, y_size]
+        """
         plt.rcParams['figure.figsize'] = size
 
         plt.clf()
@@ -91,7 +98,7 @@ class Pen:
                     closed=None, fill=None, linewidth=stroke.width)
                 )
 
-            plt.axis('scaled')
+            plt.axis(arena)
 
             if turtle:
                 xmin, xmax, ymin, ymax = plt.axis()
@@ -104,7 +111,6 @@ class Pen:
                         self.current[1] - turtlesize,
                         self.current[1] + turtlesize)
                 plt.imshow(turtle, extent=extent)
-                plt.axis('scaled')
 
             plt.show()
 
