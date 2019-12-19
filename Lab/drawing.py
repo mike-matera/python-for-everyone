@@ -34,6 +34,7 @@ class Pen:
         self.cur_heading = math.pi / 2
         self.strokes = [Pen._stroke(self.current)]
         self.pendown = True
+        self.bgimage = None
 
     def draw(self, distance):
         """Move the pen by distance."""
@@ -75,6 +76,11 @@ class Pen:
         self.strokes.append(Pen._stroke(self.current, self.strokes[-1]))
         self.strokes[-1].width = width
 
+    def background(self, filename):
+        """Set a background image.""" 
+        self.bgimage = Image.open(filename)
+        self.bgimage.load()
+
     def show(self, turtle=True, arena=(-100, 100, -100, 100), size=(6, 6)):
         """Show the current drawing and reset all drawing state. 
         
@@ -88,9 +94,14 @@ class Pen:
 
         plt.clf()
         plt.cla()
-        plt.axis(False)
 
         try:
+            plt.axis(False)
+            plt.axis(arena)
+
+            if self.bgimage is not None: 
+                plt.imshow(self.bgimage, extent=arena)
+
             cax = plt.gca()
             for stroke in self.strokes:
                 cax.add_line(plt.Polygon(
@@ -98,10 +109,8 @@ class Pen:
                     closed=None, fill=None, linewidth=stroke.width)
                 )
 
-            plt.axis(arena)
-
             if turtle:
-                xmin, xmax, ymin, ymax = plt.axis()
+                xmin, xmax, ymin, ymax = arena
                 xsize = xmax - xmin
                 ysize = ymax - ymin
                 turtlesize = max(xsize, ysize) / Pen._TurtleScale / 2
