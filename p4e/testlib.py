@@ -12,27 +12,29 @@ import importlib.util
 import pexpect
 from contextlib import contextmanager
 from pathlib import Path
+from jinja2 import Template 
 
 import HtmlTestRunner
-from IPython.core.display import display, HTML 
+from IPython.core.display import display, HTML
 
-class JupyterResult(HtmlTestRunner.result.HtmlTestResult):
+class JupyterTestResult(unittest.TextTestResult):
     def __init__(self, stream, descriptions, verbosity):
         super().__init__(stream, descriptions, verbosity)
+        self.successes = []
 
-    def generate_file(self, testRunner, report_name, report):
-        display(HTML(report))
-
+    def addSuccess(self, test):
+        self.successes.append(test)
 
 def run():
     devnull = io.StringIO()
-    template = Path(__file__)
-    template = template.parent / "report_template.html"
-    runner = HtmlTestRunner.HTMLTestRunner(combine_reports=True, verbosity=0, 
-        stream=devnull, resultclass=JupyterResult, template=str(template)
-        )
-    unittest.main(argv=['ignored'], verbosity=0, exit=False, testRunner=runner)
-    #unittest.main(argv=['ignored'], verbosity=3, exit=False)
+    with open(Path(__file__).parent / "simple_template.html") as t:
+        template = Template(t.read())
+    runner = unittest.TextTestRunner(stream=devnull, resultclass=JupyterTestResult)
+    program = unittest.main(argv=['ignored'], verbosity=0, exit=False, testRunner=runner)
+
+    display(HTML(template.render(
+        result=program.result
+    )))
 
 # A list of dictionary words
 #words = []

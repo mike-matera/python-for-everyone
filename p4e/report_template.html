@@ -11,6 +11,8 @@
         <div class="row">
             <div class="col-xs-12">
                 <h2 class="text-capitalize">{{ title }}</h2>
+                <p class='attribute'><strong>Start Time: </strong>{{ header_info.start_time.strftime("%Y-%m-%d %H:%M:%S") }}</p>
+                <p class='attribute'><strong>Duration: </strong>{{ header_info.status.duration }}</p>
                 <p class='attribute'><strong>Summary: </strong>Total: {{ header_info.status.total }}, Pass: {{ header_info.status.success }}{% if header_info.status.failure %}, Fail: {{ header_info.status.failure }}{% endif %}{% if header_info.status.error %}, Error: {{ header_info.status.error }}{% endif %}{% if header_info.status.skip %}, Skip: {{ header_info.status.skip }}{% endif %}</p>
             </div>
         </div>
@@ -54,8 +56,8 @@
                         <tr style="display:none;">
                             <td class="col-xs-9" colspan="3">
                                 {%- if test_case.stdout %}<p>{{ test_case.stdout }}</p>{% endif %}
-                                {%- if test_case.err %}<p style="font-family: monospace;color:maroon;">{{ test_case.err[0].__name__ }}: {{ test_case.err[1] }}</p>{% endif %}
-                                {%- if test_case.err %}<span style="color:maroon;"><code>{{ test_case.test_exception_info }}</code></span>{% endif %}
+                                {%- if test_case.err %}<p style="color:maroon;">{{ test_case.err[0].__name__ }}: {{ test_case.err[1] }}</p>{% endif %}
+                                {%- if test_case.err %}<p style="color:maroon;">{{ test_case.test_exception_info }}</p>{% endif %}
                             </td>
                         </tr>
                         {%- endif %}
