@@ -1,3 +1,55 @@
 <h3>Test Results</h3>
 
-<i>Total: {{ result.testsRun }}, Pass: {{ result.successes | length }} Failed: {{ result.failures | length }}</i>
+<style>
+.grid-container {
+  display: grid;
+  grid-template-columns: 7em auto;
+  grid-gap: 10px;
+}
+.grid-item-icon {
+	text-align: center;
+}
+.grid-item {
+	text-align: left;
+}
+
+</style>
+
+{% macro render_result(message, style, result) -%}
+<div class="grid-item-icon">
+	<div class="alert {{style}}">
+		<strong>{{message}}</strong>
+	  </div>
+</div>
+<div class="grid-item">
+	<b>{{ result[0].id().split('.')[-1] }}</b><br>
+	<i>{{ result[0].shortDescription() }}</i>
+</div>
+{% if result[1] %}
+	<div class="grid-item"></div>
+	<div class="grid-item">
+		<pre>{{ result[1] }}</pre>
+	</div>
+{% endif %}
+{%- endmacro %}
+
+<div class="grid-container">
+
+{%- for result in result.successes  %}
+	{{ render_result("PASS", "alert-success", result) }}
+{% endfor %}
+
+{%- for result in result.failures  %}
+	{{ render_result("FAIL", "alert-danger", result) }}
+{% endfor %}
+
+{%- for result in result.errors  %}
+	{{ render_result("ERROR", "alert-danger", result) }}
+{% endfor %}
+
+{%- for result in result.skipped  %}
+	{{ render_result("SKIP", "alert-warning", result) }}
+{% endfor %}
+
+
+</div>
