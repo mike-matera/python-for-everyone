@@ -5,7 +5,7 @@ Mike Matera
 
 import sys 
 
-def read_madlib_file(filename):
+def x_read_madlib_file(filename):
 	"""Read a madlib file."""
 	with open(filename) as f:
 		m = f.readline().strip()
@@ -14,9 +14,19 @@ def read_madlib_file(filename):
 		t3 = f.readline().strip()
 	return m, t1, t2, t3 
 
+def read_madlib_file(filename):
+	"""Read a madlib file."""
+	f = open(filename)
+	m = f.readline().strip()
+	t1 = f.readline().strip()
+	t2 = f.readline().strip()
+	t3 = f.readline().strip()
+	f.close()
+	return m, t1, t2, t3 
+
 def ask_one_word(prompt):
 	"""Get a word from the user."""
-	return input(prompt)
+	return input(prompt).strip()
 
 def display_madlib(madlib_complete):
 	"""Display the madlib"""
