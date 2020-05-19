@@ -44,6 +44,14 @@ def run():
         result=program.result
     )))
 
+_dict_words = None
+def words():
+    """Get a list of dictionary words on the system."""
+    global _dict_words
+    if _dict_words is None:
+        with open('/usr/share/dict/words') as f:
+            _dict_words = list(f) 
+    return _dict_words
 
 @contextmanager
 def stdio_wrapper(input_text=''):
@@ -80,7 +88,7 @@ class TestCase(unittest.TestCase):
 
     Setup
     
-    Implementations of this class must provide a variable named project_file. Test cases will
+    Implementations of this class must provide a variable named test_file. Test cases will
     be automatically skipped if this file doesn't exist. 
 
     The pexpect Wrapper 
@@ -127,19 +135,35 @@ class TestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        """Per-test setup. Skipps tests if self.project_file is not found."""
+        """Per-test setup. Skipps tests if self.test_file is not found."""
         super().setUp()
-        file = Path(self.project_file)
+        file = Path(self.test_file)
         if not file.exists():
             raise unittest.SkipTest(f"""File {file} not found!""")
 
-        if hasattr(self, 'function_name'):
-            mod = self.load_module()
-            if not hasattr(mod, self.function_name):
-                raise unittest.SkipTest(f"Function {self.function_name} not found.")
+        self.module = None
+        if hasattr(self, 'test_hasattr'):
+            self.module = self._load_module()
+            if not hasattr(self.module, self.test_hasattr):
+                raise unittest.SkipTest(f"""Attribute {self.test_hasattr} not found in {self.module.__file__}.""")
 
         # Create a scratch area.
         self.tempdir = tempfile.TemporaryDirectory()
+
+    def _load_module(self):
+        """Load test_file as a module, failing if there was an error.
+        
+        Returns: A Python module.
+        """ 
+
+        file = Path(self.test_file)
+        try:
+            mod_spec = importlib.util.spec_from_file_location(str(uuid.uuid4()), str(file))
+            mod = importlib.util.module_from_spec(mod_spec)
+            mod_spec.loader.exec_module(mod)
+        except:
+            self.fail("Test failed because there might be code outside of a function.")
+        return mod
 
     def tearDown(self):
         self.tempdir.cleanup()
@@ -158,7 +182,7 @@ class TestCase(unittest.TestCase):
 
         Returns: A pexpect test object (can be used as a context manager).
         """ 
-        absfile = Path(self.project_file).resolve()
+        absfile = Path(self.test_file).resolve()
         self.test = pexpect.spawn(f'{sys.executable}', [str(absfile)] + list(cmdline), 
                 logfile=sys.stdout, timeout=2.0, echo=False, encoding='utf-8', cwd=self.tempdir.name,
             )
@@ -185,40 +209,44 @@ class TestCase(unittest.TestCase):
         """Send a line of text to the running proces.""" 
         self.test.sendline(line)
 
-    def load_module(self):
-        """Load project_file as a module, failing if there was an error.
-        
-        Returns: A Python module.
-        """ 
-
-        file = Path(self.project_file)
-        try:
-            mod_spec = importlib.util.spec_from_file_location(str(uuid.uuid4()), str(file))
-            mod = importlib.util.module_from_spec(mod_spec)
-            mod_spec.loader.exec_module(mod)
-        except:
-            self.fail("Test failed because there might be code outside of a function.")
-        return mod
-
-    def sandbox_function(self, name):
+    def sandbox_function(self, func):
         """Factory function to create a Sandbox that wrapps the given function in the project.
 
         Arguments:
-            name - The name of the function
+            fun - The name of the function or a callable.
 
         Returns: The function wrapped in a Sandbox.
-        """        
-        mod = self.load_module()
-        if not hasattr(mod, name):
-            self.fail(f"""Your program doesn't have a function named {name}""")
-        func = getattr(mod, name)
-        if func.__doc__ is None:
-            self.fail(f"""Your {name} function has no docstring.""")
-        return Sandbox(self, func) 
+        """
+        if self.module is None:
+            self.module = self._load_module()
+
+        if callable(func):
+            wrap = func
+        else:
+            if not hasattr(self.module, func):
+                self.fail(f"""Your program doesn't have a function named {func}""")
+            wrap = getattr(self.module, func)
+
+        if wrap.__doc__ is None:
+            self.fail(f"""{func} has no docstring.""")
+        return FunctionSandbox(self, wrap) 
+
+    def sandbox_class(self, cls, *args, **kwargs):
+        """Wrap a class in a sandbox all instances of the class will be inside the sandbox."""
+        if self.module is None:
+            self.module = self._load_module()
+
+        if not hasattr(self.module, cls):
+            self.fail(f"""Your program doesn't have a class named {cls}""")
+        wrap = getattr(self.module, cls)
+
+        if wrap.__doc__ is None:
+            self.fail(f"""{cls} has no docstring.""")
+        return ClassSandbox(self, wrap) 
 
     def check_docstring(self, regex=r'cis(\s*|-)15'):
         """Check the project file for a docstring matching regex"""
-        file = Path(self.project_file)
+        file = Path(self.test_file)
         with open(file) as f:
             contents = f.read()
         self.assertIsNotNone(re.search(regex, contents, re.I),
@@ -279,18 +307,59 @@ class TestCase(unittest.TestCase):
             raise ValueError("The compare function doesn't work on this type:", exp.__class__.__name__)
 
 
+class SandboxFile:
+    """Container that can be opened, read and written from the sandbox."""
+
+    class StringIOWrapper(io.StringIO):
+        """Keep file contents on close()"""
+
+        def __init__(self, vf, *args, **kwargs):
+            self.vf = vf
+            super().__init__(vf.data, *args, **kwargs)
+
+        def close(self):
+            self.vf.data = self.getvalue()
+            self.vf.io = None
+            super().close()
+
+    def __init__(self, test, name, modes, data=None):
+        self.test = test
+        self.name = name
+        self.modes = modes
+        self.data = None
+        self.io = None 
+
+    def open(self, mode, *args, **kwargs):
+        """Open a virtual file, possibly overwriting contents.""" 
+        if self.io is None: 
+            self.io = SandboxFile.StringIOWrapper(self, *args, **kwargs)
+            if mode == 'w' or mode == 'w+':
+                self.io.truncate()
+            elif mode == 'a':
+                self.io.seek(0,2)
+        else:
+            raise self.test.fail(f"Attempted to open an already opened file: {self.name}")
+
+    def close(self):
+        """Close the stream but maitain the data."""
+        if self.io is not None:
+            self.io.close()
+        else:
+            self.test.fail(f"Attempted to close an already closed file: {self.name}")
+
+
 class Sandbox:
     """A wrapper around test functions that prevents common mistakes from disrupting testing.""" 
 
-    def __init__(self, test, func):
-        """Initialize the wapper with a class that is based on unittest.TestCase and a function to wrap."""
-        self.func = func
+    def __init__(self, test):
+        """Initialize the wapper with a class that is based on unittest.TestCase and a function or class to wrap."""
         self.test = test
         self.files = {}
         self.inputs = []
         self.stdout = io.StringIO()
+        self.instance = None
 
-    def __call__(self, *args, **kwargs):
+    def call(self, func, *args, **kwargs):
         """Execute the wrapped function."""
         try:            
             save_open = builtins.open
@@ -301,7 +370,7 @@ class Sandbox:
             builtins.input = self._input
             sys.stdout = self.stdout
 
-            return self.func(*args, **kwargs)
+            return func(*args, **kwargs)
 
         finally:
             builtins.open = save_open
@@ -313,46 +382,6 @@ class Sandbox:
             for file in self.files:
                 if self.files[file].io is not None:
                     self.test.fail(f"""Your function exited and left {file} open.""")
-
-    class VirtualFile:
-        """Container that can be opened, read and written from the sandbox."""
-
-        class StringIOWrapper(io.StringIO):
-            """Keep file contents on close()"""
-
-            def __init__(self, vf, *args, **kwargs):
-                self.vf = vf
-                super().__init__(vf.data, *args, **kwargs)
-
-            def close(self):
-                self.vf.data = self.getvalue()
-                self.vf.io = None
-                super().close()
-
-        def __init__(self, test, name, modes, data=None):
-            self.test = test
-            self.name = name
-            self.modes = modes
-            self.data = None
-            self.io = None 
-
-        def open(self, mode, *args, **kwargs):
-            """Open a virtual file, possibly overwriting contents.""" 
-            if self.io is None: 
-                self.io = Sandbox.VirtualFile.StringIOWrapper(self, *args, **kwargs)
-                if mode == 'w' or mode == 'w+':
-                    self.io.truncate()
-                elif mode == 'a':
-                    self.io.seek(0,2)
-            else:
-                raise self.test.fail(f"Attempted to open an already opened file: {self.name}")
-
-        def close(self):
-            """Close the stream but maitain the data."""
-            if self.io is not None:
-                self.io.close()
-            else:
-                self.test.fail(f"Attempted to close an already closed file: {self.name}")
 
     def open(self, name, mode='r', clientmodes=['r', 'w', 'r+', 'w+', 'a'], *args, **kwargs):
         """Open a virtual file. This is meant to be called from unittest code (not client code). 
@@ -368,7 +397,7 @@ class Sandbox:
         Returns: A io.StringIO() to be used in place of the file. 
         """
         if name not in self.files:
-            self.files[name] = Sandbox.VirtualFile(self.test, name, clientmodes)
+            self.files[name] = SandboxFile(self.test, name, clientmodes)
         self.files[name].open(mode)
         return self.files[name].io
 
@@ -382,7 +411,7 @@ class Sandbox:
             clientmodes - The modes code under test will be able to use to open this file.
         """
         if name not in self.files:
-            self.files[name] = Sandbox.VirtualFile(self.test, name, clientmodes)
+            self.files[name] = SandboxFile(self.test, name, clientmodes)
         self.files[name].modes = clientmodes
 
     def file_contents(self, filename):
@@ -433,3 +462,34 @@ class Sandbox:
             self.test.fail("""You should not use input in this function (or you've used it too many times).""")
         print(prompt, end="")
         return str(self.inputs.pop(0)) + '\n'
+
+class FunctionSandbox:
+    """A sandbox implementation for functions."""
+
+    def __init__(self, test, func):
+        self.sandbox = Sandbox(test)
+        self.func = func 
+    
+    def __call__(self, *args, **kwargs):
+        return self.sandbox.call(self.func, *args, **kwargs)
+
+class ClassSandbox:
+    """A sandbox implementation for a class and its methods."""
+
+    def __init__(self, test, cls):
+        self.sandbox = Sandbox(test)
+        self.cls = cls 
+
+    def __call__(self, *args, **kwargs):
+        """Call the class constructor and wrap the instnace.""" 
+        class _SandboxWrapper(self.cls):
+            def __getattribute__(inner_self, name):
+                attr = self.cls.__getattribute__(inner_self, name)
+                if callable(attr):
+                    def call_wrapper(*args, **kwargs):
+                        return self.sandbox.call(attr, *args, **kwargs)
+                    return call_wrapper
+                return attr 
+
+        return self.sandbox.call(_SandboxWrapper, *args, **kwargs)
+
