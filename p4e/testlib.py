@@ -133,6 +133,11 @@ class TestCase(unittest.TestCase):
         if not file.exists():
             raise unittest.SkipTest(f"""File {file} not found!""")
 
+        if hasattr(self, 'function_name'):
+            mod = self.load_module()
+            if not hasattr(mod, self.function_name):
+                raise unittest.SkipTest(f"Function {self.function_name} not found.")
+
         # Create a scratch area.
         self.tempdir = tempfile.TemporaryDirectory()
 
