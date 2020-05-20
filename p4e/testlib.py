@@ -23,6 +23,7 @@ import requests
 import requests_unixsocket
 from IPython.core.display import display, HTML
 from flask import Flask, request
+from werkzeug.exceptions import HTTPException
 
 class JupyterTestResult(unittest.TextTestResult):
     """A test result class that is rendered into a Jupyter notebook.
@@ -526,14 +527,20 @@ class FlaskSandbox:
     class SandboxRequestor:
         """A wrapper around requests.request() that simplifies testing."""
 
-        def __init__(self, session, urlpattern):
+        def __init__(self, test, session, urlpattern):
             self.session = session
             self.url = urlpattern
+            self.test = test 
 
-        def get(self, path):
+        def get(self, path, status=None):
             if not path.startswith('/'):
                 path = '/' + path
-            return self.session.get(self.url.format(path))
+            response = self.session.get(self.url.format(path))
+            if response.status_code == 500:
+                self.test.fail(f"""There was an exception in your Flask program:\n{response.text}""")
+            if status is not None and response.status_code != status:
+                self.test.fail(f"""The respone code for {path} was {response.status_code} and should have been {status}""")
+            return response 
 
     def __init__(self, test, app):
         self.sandbox = Sandbox(test)
@@ -555,12 +562,19 @@ class FlaskSandbox:
             request.environ.get('werkzeug.server.shutdown')()
             return "Goodbye!"
 
+        def _exception(error):
+            # pass through HTTP errors
+            if isinstance(error, HTTPException):
+                return error
+            return str(error), 500
+
         def _run_thread():
             """Run the flask worker in a separate thread."""
             self.sandbox.call(self.app.run, host=f"unix://{self.socket}", threaded=False)
 
         self.app.add_url_rule('/ready', 'ready', _ready)
         self.app.add_url_rule('/shutdown', 'shutdown', _shutdown)
+        self.app.register_error_handler(Exception, _exception)
 
         try:
             app_thread = threading.Thread(target=_run_thread, daemon=True)
@@ -582,12 +596,8 @@ class FlaskSandbox:
             if tries == 0:
                 self.sandbox.test.fail("The Flask server never responded to a request!")
 
-            yield FlaskSandbox.SandboxRequestor(session, self.url)
-        
-        except:
-            print('STDOUT:', self.sandbox.get_stdout())
-            print('STDERR:', self.sandbox.get_stderr())
-
+            yield FlaskSandbox.SandboxRequestor(self.sandbox.test, session, self.url)
+                    
         finally:
             session.get(self.url.format('/shutdown'))
             app_thread.join()

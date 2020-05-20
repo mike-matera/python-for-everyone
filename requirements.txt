@@ -11,4 +11,6 @@ scipy
 seaborn
 ipywidgets
 sphinx
+requests_unixsocket
+python-docs-theme
 -e . 

@@ -30,20 +30,18 @@ class SimpleFlask(testlib.TestCase):
     
     @solution.route('/hello')
     def hello():
-        return "Hello"
+        return 'Hello'
 
     def test_01_test_routes(self):
-        
+
         app = self.sandobx_flask(self.test_hasattr)
         with app.run() as session:
-            r = session.get("/")
-            if r.status_code != 200:
-                self.fail(f"""Failed on the index route. The response was: {r.text}""")
+            r = session.get("/", status=200)
             if r.text != "Welcome":
                 self.fail(f"""You didn't say "Welcome" on the default route.""")
-
-            r = session.get("/hello")
-            if r.status_code != 200:
-                self.fail(f"""Failed on the index route. The response was: {r.text}""")
+    
+            r = session.get("/hello", status=200)
             if r.text != "Hello":
-                self.fail(f"""You didn't say "Welcome" on the default route.""")
+                self.fail(f"""Your hello routed said the wrong thing: {r.text}""")
+
+            r = session.get('/def_not_here', status=404)

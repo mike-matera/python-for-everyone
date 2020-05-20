@@ -18,17 +18,16 @@ class T04LetterCount(testlib.TestCase):
 
     .. code-block:: python
 
-    {
-        'h' : 1,
-        'e' : 1,
-        'l' : 3,
-        'o' : 2,
-        'w' : 1,
-        'r' : 1,
-        'd' : 1,
-    }
+        {
+            'h' : 1,
+            'e' : 1,
+            'l' : 3,
+            'o' : 2,
+            'w' : 1,
+            'r' : 1,
+            'd' : 1,
+        }
     
-
     - Arguments:
         - ``phrase`` - A phrase
     - Returns:
