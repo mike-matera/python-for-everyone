@@ -7,6 +7,12 @@ These are free points on a test.
 import random
 from p4e import testlib 
 
+class T00Docstrings(testlib.TestCase):
+
+    def test_has_docstring(self):
+        """Testing your docstring."""        
+        self.check_docstring()
+
 class T01_ArgumentReverser(testlib.TestCase):
     """
     Write a function called ``arg_reverser`` that takes three arguments and returns 

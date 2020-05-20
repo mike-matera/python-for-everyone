@@ -11,6 +11,7 @@ import math
 import random
 from p4e import testlib 
 
+
 class T02_UserInput(testlib.TestCase):
     """
     Write a function called ``compute_sinc`` that asks the user to input a number and
@@ -43,6 +44,7 @@ class T02_UserInput(testlib.TestCase):
         exp = math.sin(x) / x 
         got = compute_sinc(x)
         self.compare(got, exp)
+
 
 class TestAddingMachine(testlib.TestCase) :
     """
