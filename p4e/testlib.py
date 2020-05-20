@@ -17,7 +17,12 @@ import builtins
 from contextlib import contextmanager
 from pathlib import Path
 from jinja2 import Template 
+import threading
+import time
+import requests 
+import requests_unixsocket
 from IPython.core.display import display, HTML
+from flask import Flask, request
 
 class JupyterTestResult(unittest.TextTestResult):
     """A test result class that is rendered into a Jupyter notebook.
@@ -244,6 +249,17 @@ class TestCase(unittest.TestCase):
             self.fail(f"""{cls} has no docstring.""")
         return ClassSandbox(self, wrap) 
 
+    def sandobx_flask(self, app):
+        """Wrap a Flask application in a sandbox. The sandbox provides the run() function."""
+        if self.module is None:
+            self.module = self._load_module()
+
+        if not hasattr(self.module, app):
+            self.fail(f"""Your program doesn't have a variable named {app}""")
+        wrap = getattr(self.module, app)
+
+        return FlaskSandbox(self, wrap) 
+
     def check_docstring(self, regex=r'cis(\s*|-)15'):
         """Check the project file for a docstring matching regex"""
         file = Path(self.test_file)
@@ -357,6 +373,7 @@ class Sandbox:
         self.files = {}
         self.inputs = []
         self.stdout = io.StringIO()
+        self.stderr = io.StringIO()
         self.instance = None
 
     def call(self, func, *args, **kwargs):
@@ -365,10 +382,12 @@ class Sandbox:
             save_open = builtins.open
             save_input = builtins.input
             save_stdout = sys.stdout
+            save_stderr = sys.stderr
 
             builtins.open = self._open
             builtins.input = self._input
             sys.stdout = self.stdout
+            sys.stderr = self.stderr
 
             return func(*args, **kwargs)
 
@@ -376,7 +395,9 @@ class Sandbox:
             builtins.open = save_open
             builtins.input = save_input
             sys.stdout = save_stdout 
+            sys.stderr = save_stderr 
             self.stdout.flush()
+            self.stderr.flush()
 
             # Verify that files are closed. 
             for file in self.files:
@@ -444,7 +465,13 @@ class Sandbox:
         print(stdout)
         if re.match(pattern, stdout) is None:
             self.test.fail(f"""I expected to see {pattern} but it wasn't there.""")
-        
+
+    def get_stdout(self):
+        return self.stdout.getvalue()
+
+    def get_stderr(self):
+        return self.stderr.getvalue()
+
     def _open(self, filename, mode='r', *args, **kwargs):
         """The open function that is exposed to the function under test.""" 
         if filename not in self.files:
@@ -493,3 +520,74 @@ class ClassSandbox:
 
         return self.sandbox.call(_SandboxWrapper, *args, **kwargs)
 
+class FlaskSandbox:
+    """A sandbox implementation for Flask applications."""
+
+    class SandboxRequestor:
+        """A wrapper around requests.request() that simplifies testing."""
+
+        def __init__(self, session, urlpattern):
+            self.session = session
+            self.url = urlpattern
+
+        def get(self, path):
+            if not path.startswith('/'):
+                path = '/' + path
+            return self.session.get(self.url.format(path))
+
+    def __init__(self, test, app):
+        self.sandbox = Sandbox(test)
+        self.app = app 
+
+    @contextmanager
+    def run(self):
+        """Launch the server and wait for it to handle connections."""
+
+        self.socket = f"{self.sandbox.test.tempdir.name}/flask.sock"
+        self.url = "http+unix://" + self.socket.replace('/', '%2F') + "{}"
+
+        session = requests_unixsocket.Session()
+
+        def _ready():
+            return "Ready"
+
+        def _shutdown():
+            request.environ.get('werkzeug.server.shutdown')()
+            return "Goodbye!"
+
+        def _run_thread():
+            """Run the flask worker in a separate thread."""
+            self.sandbox.call(self.app.run, host=f"unix://{self.socket}", threaded=False)
+
+        self.app.add_url_rule('/ready', 'ready', _ready)
+        self.app.add_url_rule('/shutdown', 'shutdown', _shutdown)
+
+        try:
+            app_thread = threading.Thread(target=_run_thread, daemon=True)
+            app_thread.start()
+
+            tries = 10
+            while app_thread.is_alive() and tries > 0:
+                try:
+                    r = session.get(self.url.format('/ready'))
+                    break
+                except requests.ConnectionError as e:
+                    print(e)
+                    time.sleep(0.5)
+                    tries -= 1
+
+            if not app_thread.is_alive():
+                self.sandbox.test.fail("The Flask server never started!")
+
+            if tries == 0:
+                self.sandbox.test.fail("The Flask server never responded to a request!")
+
+            yield FlaskSandbox.SandboxRequestor(session, self.url)
+        
+        except:
+            print('STDOUT:', self.sandbox.get_stdout())
+            print('STDERR:', self.sandbox.get_stderr())
+
+        finally:
+            session.get(self.url.format('/shutdown'))
+            app_thread.join()
