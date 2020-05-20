@@ -1,18 +1,8 @@
-import io
-import os
 import random
-import re
-import subprocess
-import sys
-import traceback
-import unittest
-from pathlib import Path
 from p4e import testlib 
 
 
 class T00Docstrings(testlib.TestCase):
-
-    test_file = 'final.py'
 
     def test_has_docstring(self):
         """Testing your docstring."""        
@@ -31,12 +21,10 @@ class T01AverageList(testlib.TestCase):
 
     """
 
-    test_file = 'final.py'
     test_hasattr = 'average_list'
 
     def test_1_does_numbers(self):
         """Testing your average_list() function."""
-        print("Testing average_list()")
         nums = []
         for i in range(random.randint(20, 100)):
             nums.append(random.uniform(1, 1000))
@@ -61,12 +49,9 @@ class T02Running_Sum(testlib.TestCase):
     *Note: You can assume that the checker will only give you numbers.*
     """
 
-    test_file = 'final.py'
     test_hasattr = 'running_sum'
 
     def test_1_check_sum(self):
-        print("""+ Testing your running_sum() function""")
-
         nums = []
         for i in range(random.randint(20, 100)):
             nums.append(random.uniform(1, 1000))
@@ -93,13 +78,10 @@ class T03ListFilter(testlib.TestCase):
         
     """
 
-    test_file = 'final.py'
     test_hasattr = 'list_filter'
 
     def test_1_check_list(self):
         """Test list_filter()"""
-        print("""+ Testing your list_filter() function""")
-
         nums = []
         for i in range(random.randint(20, 100)):
             nums.append(random.uniform(1, 1000))
@@ -139,7 +121,6 @@ class T04LetterCount(testlib.TestCase):
         
     """
 
-    test_file = 'final.py'
     test_hasattr = 'letter_count'
 
     def letter_count(self, phrase):
@@ -155,7 +136,6 @@ class T04LetterCount(testlib.TestCase):
 
     def test_1_do_random_phrase(self):
         """Testing letter_count()"""
-        print("""+ Testing your letter_count() function""")
         phrase = ""
         for _ in range(random.randint(5, 10)):
             phrase += random.choice(testlib.words()) + " "
@@ -189,57 +169,29 @@ class T05Counter(testlib.TestCase):
         - Returns: ``None``
     """
 
-    test_file = "final.py"
     test_hasattr = 'Counter'
 
-    def test_1_init(self):
-        """There was an error creating an instance of class Counter"""
-        print('+ Creating an in instance of final.Counter')
+    def test_1_counter(self):
+        """Testing your Counter class."""
         Counter = self.sandbox_class('Counter')
+
         c = Counter(10)
+        if not hasattr(c, 'count'):
+            self.fail("""Your Counter class doesn't have a count attribute.""")
 
-    def test_2_has_count(self):
-        """Your counter class doesn't have a count member variable"""
-        print('+ Checking for the count member variable.')
-        init = random.randint(1, 100)
-        Counter = self.sandbox_class('Counter')
-        c = Counter(init)
-        self.assertEqual(init, c.count, "Your count variable doesn't exist or is not the right value")
+        if c.count != 10:
+            self.fail("""The count attribute was not set in __init__()""")
 
-    def test_3_increment(self):
-        """Your counter didn't count up like it's supposed to."""
-        print('+ Calling plus_one() to see if it works.')
-        init = random.randint(1, 100)
-        Counter = self.sandbox_class('Counter')
-        c = Counter(init)    
-        add = random.randint(1, 100)
-        for i in range(add):
+        for _ in range(10):
             c.plus_one()
-        self.assertEqual(add + init, c.count, "Calling plus_one() doesn't seem to do the right thing.")
+        if c.count != 20:
+            self.fail("""I the count is not correct after calling plus_one()""")
 
-    def test_4_decrement(self):
-        """Your counter didn't count down like it's supposed to."""
-        print('+ Calling minus_one() to see if it works.')
-        init = random.randint(1, 100)
-        Counter = self.sandbox_class('Counter')
-        c = Counter(init)    
-        add = random.randint(1, 100)
-        for i in range(add):
+        for _ in range(5):
             c.minus_one()
-        self.assertEqual(init - add, c.count, "Calling minus_one() doesn't seem to do the right thing.")
-
-    def test_5_reset(self):
-        """Your counter didn't go back to the initial value after calling reset_count()."""
-        print('+ Calling reset_count() to see if it works.')
-        init = random.randint(1, 100)
-        Counter = self.sandbox_class('Counter')
-        c = Counter(init)    
-        add = random.randint(1, 100)
-        for i in range(add):
-            c.minus_one()
+        if c.count != 15:
+            self.fail("""I the count is not correct after calling minus_one()""")
 
         c.reset_count()
-        self.assertEqual(init, c.count, "Calling reset_count() doesn't seem to do the right thing.")
-
-if __name__ == '__main__':
-    unittest.main(verbosity=3)
+        if c.count != 10:
+            self.fail("""I the count is not correct after calling reset_count()""")
