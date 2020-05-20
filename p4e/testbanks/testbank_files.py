@@ -32,6 +32,15 @@ class T03_FileSums(testlib.TestCase):
 
     test_hasattr = 'file_sums'
 
+    @staticmethod
+    def solution(file):
+        """Check the file."""
+        s = 0
+        with open(file) as fh:
+            for num in fh:
+                s += float(num)
+        return s > 100
+
     def test_1_sum(self): 
         """Checking your file_sums() function."""
 
@@ -49,7 +58,6 @@ class T03_FileSums(testlib.TestCase):
         self.compare(got, False)
 
         got = file_sums('large.txt')
-        print(file_sums.sandbox.stdout.getvalue())
         self.compare(got, True)
 
 
@@ -93,6 +101,20 @@ class T06_FileFibo(testlib.TestCase):
     """
 
     test_hasattr = 'file_fibo'
+
+    @staticmethod
+    def solution(file):
+        """Do the fib"""
+        with open(file, "r") as fh:
+            num1 = int(fh.readline())
+            num2 = int(fh.readline())
+            the_rest = fh.read()
+
+        with open(file, 'w') as fh:
+            fh.write(f"{num1 + num2}\n")
+            fh.write(f"{num1}\n")
+            fh.write(f"{num2}\n")
+            fh.write(the_rest)
 
     def test_1_file_turns(self):
         """Testing your file_fibo() function.""" 
@@ -149,7 +171,14 @@ class T07_FileDecoderRing(testlib.TestCase):
         - The letter on the specified line of the file without a newline.
     """
 
-    file_hasattr = 'decoder_ring'
+    test_hasattr = 'decoder_ring'
+
+    @staticmethod
+    def solution(decoder_file, decoder_letter):
+        """The decoder ring."""
+        with open(decoder_file) as fh:
+            fh.seek((decoder_letter-1) * 2)
+            return fh.read(1)
 
     def test_01_do_decode(self):
         """Testing your decoder_ring()"""
@@ -159,12 +188,11 @@ class T07_FileDecoderRing(testlib.TestCase):
         number = random.randint(1, len(letters))
         exp = letters[number-1]
 
-        decoder_ring = self.sandbox_function(self.file_hasattr)
+        decoder_ring = self.sandbox_function(self.test_hasattr)
         with decoder_ring.sandbox.open('codes.txt', 'w') as fh:
             for l in letters:
                 fh.write(l + "\n")
 
-        print("DBG:", number, decoder_ring.sandbox.file_contents('codes.txt'))
         got = decoder_ring('codes.txt', number)
         self.compare(got, exp)
 

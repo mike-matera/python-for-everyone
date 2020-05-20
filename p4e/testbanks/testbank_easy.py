@@ -25,6 +25,11 @@ class T01_ArgumentReverser(testlib.TestCase):
 
     test_hasattr = "arg_reverser"
 
+    @staticmethod
+    def solution(arg1, arg2, arg3):
+        """Reverse my arguments."""
+        return (arg3, arg2, arg1)
+
     def test_01_does_reverse(self):
         """Testing arg_reverser()"""
 
@@ -53,6 +58,11 @@ class T03_TriangeArea(testlib.TestCase):
     """
 
     test_hasattr = 'triangle_area'
+
+    @staticmethod
+    def solution(base, height):
+        """Calculate the area of a triangle."""
+        return (base * height) / 2 
 
     def test_01_does_compute(self):
         """You did not properly compute the area."""

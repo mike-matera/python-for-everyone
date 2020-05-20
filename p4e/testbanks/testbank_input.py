@@ -30,6 +30,11 @@ class T02_UserInput(testlib.TestCase):
 
     test_hasattr = 'compute_sinc'
 
+    @staticmethod
+    def solution(x):
+        """Compute sin(x)/x"""
+        return math.sin(x) / x 
+
     def test_01_does_sinc(self):
         """Testing compute_sinc"""
         x = random.uniform(0, 2 * math.pi)
@@ -39,7 +44,7 @@ class T02_UserInput(testlib.TestCase):
         got = compute_sinc(x)
         self.compare(got, exp)
 
-class Test2(testlib.TestCase) :
+class TestAddingMachine(testlib.TestCase) :
     """
     Write a function called ``adding_machine`` that uses the ``input()`` function three 
     times to get three floating point numbers from the user and returns the sum of
@@ -55,6 +60,15 @@ class Test2(testlib.TestCase) :
     """
 
     test_hasattr = "adding_machine"
+
+    @staticmethod
+    def solution():
+        """The adding_machine function."""
+        s = 0
+        s += float(input('Enter a number: '))
+        s += float(input('Enter a number: '))
+        s += float(input('Enter a number: '))
+        return s 
 
     def test_1_add(self) : 
         """Testing your adding_machine function."""

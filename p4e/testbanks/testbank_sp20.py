@@ -8,7 +8,6 @@ class T00Docstrings(testlib.TestCase):
         """Testing your docstring."""        
         self.check_docstring()
 
-
 class T01AverageList(testlib.TestCase):
     """
     Write a function called ``average_list()`` that takes a list of numbers as an
@@ -22,6 +21,14 @@ class T01AverageList(testlib.TestCase):
     """
 
     test_hasattr = 'average_list'
+
+    @staticmethod
+    def solution(nums):
+        """Average a list."""
+        s = 0
+        for num in nums:
+            s += num
+        return s / len(nums) 
 
     def test_1_does_numbers(self):
         """Testing your average_list() function."""
@@ -51,6 +58,15 @@ class T02Running_Sum(testlib.TestCase):
 
     test_hasattr = 'running_sum'
 
+    @staticmethod
+    def solution(limit):
+        """Compute the running sum."""
+        sums = 0
+        while True:
+            sums += float(input('Give me a number:'))
+            if sums >= limit:
+                return sums
+
     def test_1_check_sum(self):
         nums = []
         for i in range(random.randint(20, 100)):
@@ -58,9 +74,9 @@ class T02Running_Sum(testlib.TestCase):
         exp = sum(nums)
         nums.append(random.uniform(1, 1000))
 
-        running_sum = self.sandbox_function('running_sum')
+        running_sum = self.sandbox_function(self.test_hasattr)
         running_sum.sandbox.allow_input(*nums)
-        got = running_sum(nums, exp)
+        got = running_sum(exp)
         self.compare(got, exp)
 
 
@@ -79,6 +95,15 @@ class T03ListFilter(testlib.TestCase):
     """
 
     test_hasattr = 'list_filter'
+
+    @staticmethod
+    def solution(number_list, limit):
+        """Filter this list."""
+        output = []
+        for num in number_list:
+            if num < limit:
+                output.append(num)
+        return output
 
     def test_1_check_list(self):
         """Test list_filter()"""
@@ -122,6 +147,18 @@ class T04LetterCount(testlib.TestCase):
     """
 
     test_hasattr = 'letter_count'
+
+    @staticmethod
+    def solution(phrase):
+        """Count the letters in the phrase."""
+        rval = {}
+        for letter in phrase.lower():
+            if letter.isalpha():
+                if letter not in rval:
+                    rval[letter] = 1
+                else:
+                    rval[letter] += 1
+        return rval
 
     def letter_count(self, phrase):
         """Count the letters in the phrase."""
@@ -171,9 +208,30 @@ class T05Counter(testlib.TestCase):
 
     test_hasattr = 'Counter'
 
+    class solution:
+        """A Counter Class"""
+
+        def __init__(self, start_num):
+            """Initialize the class."""
+            self.start = start_num
+            self.count = start_num 
+
+        def plus_one(self):
+            """Add one."""
+            self.count += 1 
+
+        def minus_one(self):
+            """Subtract one."""
+            self.count -= 1 
+
+        def reset_count(self):
+            """Reset"""
+            self.count = self.start
+
+
     def test_1_counter(self):
         """Testing your Counter class."""
-        Counter = self.sandbox_class('Counter')
+        Counter = self.sandbox_class(self.test_hasattr)
 
         c = Counter(10)
         if not hasattr(c, 'count'):
