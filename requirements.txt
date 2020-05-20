@@ -10,4 +10,5 @@ matplotlib
 scipy
 seaborn
 ipywidgets
+sphinx
 -e . 
