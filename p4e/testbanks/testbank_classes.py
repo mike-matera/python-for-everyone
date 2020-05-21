@@ -11,41 +11,41 @@ class T05Counter(testlib.TestCase):
     """
     Note:
         Students create a simple class with three methods and two class variables. 
-
-    Write a class called ``Counter``. The class has the variables:
-
-    - ``self.count`` - Keeps track of the current count.
-    - ``self.initial_count`` - Stores the initial count passed to ``__init__()``.
-
-    The class has the following methods:
-
-    Definition of ``__init__``:
-
-    Arguments:
-        self (Counter): The instance 
-        start_num (int):  Initialize ``self.count`` with a starting count
-
-    Definition of ``plus_one()``. Add one to the counter. 
-
-    Arguments:
-        self (Counter): The instance 
-
-    Definition of ``minus_one()``. Subtract one from the counter. 
-
-    Arguments:
-        self (Counter): The instance 
-
-    Definition of ``reset_count()``. Reset the counter to the initial value. 
-
-    Arguments:
-        self (Counter): The instance 
     """
 
     test_hasattr = 'Counter'
 
-    class solution:
-        """A Counter Class"""
+    class Counter:
+        """
+        Write a class called ``Counter``. The class has the variables:
 
+            - ``self.count`` - Keeps track of the current count.
+            - ``self.initial_count`` - Stores the initial count passed to ``__init__()``.
+
+        The class has the following methods:
+
+        Definition of ``__init__``:
+
+        Arguments:
+            self (Counter): The instance 
+            start_num (int):  Initialize ``self.count`` with a starting count
+
+        Definition of ``plus_one()``. Add one to the counter. 
+
+        Arguments:
+            self (Counter): The instance 
+
+        Definition of ``minus_one()``. Subtract one from the counter. 
+
+        Arguments:
+            self (Counter): The instance 
+
+        Definition of ``reset_count()``. Reset the counter to the initial value. 
+
+        Arguments:
+            self (Counter): The instance 
+
+        """
         def __init__(self, start_num):
             """Initialize the class."""
             self.start = start_num

@@ -20,25 +20,25 @@ class T01_ArgumentReverser(testlib.TestCase):
     """
     Note:
         Tests arguments and return values.
-
-    Write a function called ``arg_reverser`` that takes three arguments and returns 
-    them in reverse order. 
-
-    Function ``arg_reverser``:
-
-    Args: 
-        arg1 (object): The first argument.
-        arg2 (object): The second argument.
-        arg3 (object): The third argument.
-    Returns:
-        tuple: (arg3, arg2, arg1) 
     """
 
     test_hasattr = "arg_reverser"
 
     @staticmethod
-    def solution(arg1: object, arg2: object, arg3: object) -> tuple:
-        """Reverse arguments."""
+    def arg_reverser(arg1: object, arg2: object, arg3: object) -> tuple:
+        """
+        Write a function called ``arg_reverser`` that takes three arguments and returns 
+        them in reverse order. 
+
+        Function ``arg_reverser``:
+
+        Args: 
+            arg1 (object): The first argument.
+            arg2 (object): The second argument.
+            arg3 (object): The third argument.
+        Returns:
+            tuple: (arg3, arg2, arg1) 
+        """
         return (arg3, arg2, arg1)
 
     def test_01_does_reverse(self):
@@ -57,24 +57,24 @@ class T03_TriangeArea(testlib.TestCase):
     """
     Note:
         Tests arguments and return values, simple math. 
-
-    Write a function called ``triangle_area`` that takes two arguments, `base` and `height`. The function returns the area
-    of a triangle that has the given ``base`` and ``height``.
-
-    Function ``triangle_area``:
-
-    Arguments:
-        base (float): The base of the triangle.
-        height (float): The height of the triangle.
-    Returns:
-        float: The area of a triangle with ``base`` and ``height``.
     """
 
     test_hasattr = 'triangle_area'
 
     @staticmethod
-    def solution(base, height):
-        """Calculate the area of a triangle."""
+    def triangle_area(base, height):
+        """
+        Write a function called ``triangle_area`` that takes two arguments, `base` and `height`. The function returns the area
+        of a triangle that has the given ``base`` and ``height``.
+
+        Function ``triangle_area``:
+
+        Arguments:
+            base (float): The base of the triangle.
+            height (float): The height of the triangle.
+        Returns:
+            float: The area of a triangle with ``base`` and ``height``.
+        """
         return (base * height) / 2 
 
     def test_01_does_compute(self):

@@ -56,8 +56,7 @@ def __getattr__(name):
 
     for test in test_cache:
         if hasattr(test, 'test_hasattr') and test.test_hasattr == name:
-            if hasattr(test, 'solution'):
-                return test.solution
+            return getattr(test, name)
 
     raise AttributeError("No solution found.")
 

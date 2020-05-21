@@ -22,13 +22,13 @@ class SimpleFlask(testlib.TestCase):
 
     test_hasattr = "hello_app"
 
-    solution = Flask(__name__)
+    hello_app = Flask(__name__)
 
-    @solution.route('/')
+    @hello_app.route('/')
     def index():
         return "Welcome"
     
-    @solution.route('/hello')
+    @hello_app.route('/hello')
     def hello():
         return 'Hello'
 

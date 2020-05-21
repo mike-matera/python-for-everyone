@@ -10,24 +10,23 @@ from p4e import testlib
 
 class T01AverageList(testlib.TestCase):
     """
-    Average a List
-    ============== 
-    
-    Write a function called ``average_list()`` that takes a list of numbers as an
-    argument and returns the average of the numbers in the list.
-
-    - Arguments:
-        - ``nums`` - A list of floats
-    - Returns:
-        - The average of the numbers in ``nums``
-
+    Note:
+        Loop over a list to perform simple math. Does not require conditionals. 
     """
 
     test_hasattr = 'average_list'
 
     @staticmethod
-    def solution(nums):
-        """Average a list."""
+    def average_list(nums):
+        """
+        Write a function called ``average_list()`` that takes a list of numbers as an
+        argument and returns the average of the numbers in the list.
+
+        Arguments:
+            nums (list of float): A list of numbers to filter
+        Returns:
+            (float): The average of the numbers in ``nums``
+        """
         s = 0
         for num in nums:
             s += num
@@ -47,23 +46,26 @@ class T01AverageList(testlib.TestCase):
 
 class T02Running_Sum(testlib.TestCase):
     """
-    Write a function called ``running_sum()`` that takes one argument called ``limit``.
-    The function repeatedly prompts the user for numbers using ``input()`` adding all the numbers together.
-    When the sum of the numbers is greater than or equal to ``limit`` the function returns the sum.
-
-    - Arguments:
-        - ``limit`` - Return when the sum of the ``input()`` numbers is greater than or equal to ``limit``
-    - Returns:
-        - The sum of the ``input()`` numbers.
-        
-    *Note: You can assume that the checker will only give you numbers.*
+    Note:
+        Loop over a list with an unknown stop condition. Can be done with ``for`` or ``while``. 
     """
 
     test_hasattr = 'running_sum'
 
     @staticmethod
-    def solution(limit):
-        """Compute the running sum."""
+    def running_sum(limit):
+        """
+        Write a function called ``running_sum()`` that takes one argument called ``limit``.
+        The function repeatedly prompts the user for numbers using ``input()`` adding all the numbers together.
+        When the sum of the numbers is greater than or equal to ``limit`` the function returns the sum.
+
+        Arguments:
+            limit (float): Return when the sum of the ``input()`` numbers is greater than or equal to ``limit``
+        Returns:
+            (float): The sum of the ``input()`` numbers.
+            
+        *Note: You can assume that the checker will only give you numbers.*
+        """
         sums = 0
         while True:
             sums += float(input('Give me a number:'))

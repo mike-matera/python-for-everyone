@@ -15,26 +15,26 @@ from p4e import testlib
 class T02_UserInput(testlib.TestCase):
     """
     Note:
-        Use the ``input()`` function and convert the value to a `float`. Students need to ``import math``
-    
-    Write a function called ``compute_sinc`` that asks the user to input a number and
-    computes the ``sinc`` function of that number. The ``sinc`` function of ``x`` is: 
-
-    .. math:: 
-
-        sin(x) / x 
-
-    Definition of ``compute_sinc``:
-
-    Returns:
-        float: The sinc() function computed on the input.  
+        Use the ``input()`` function and convert the value to a `float`. Students need to ``import math``    
     """
 
     test_hasattr = 'compute_sinc'
 
     @staticmethod
-    def solution(x):
-        """Compute sin(x)/x"""
+    def compute_sinc(x):
+        """
+        Write a function called ``compute_sinc`` that asks the user to input a number and
+        computes the ``sinc`` function of that number. The ``sinc`` function of ``x`` is: 
+
+        .. math:: 
+
+            sin(x) / x 
+
+        Definition of ``compute_sinc``:
+
+        Returns:
+            float: The sinc() function computed on the input.  
+        """
         return math.sin(x) / x 
 
     def test_01_does_sinc(self):
@@ -51,22 +51,22 @@ class TestAddingMachine(testlib.TestCase) :
     """
     Note:
         Use input and convert the results to numbers. 
-
-    Write a function called ``adding_machine`` that uses the ``input()`` function three 
-    times to get three floating point numbers from the user and returns the sum of
-    the numbers. 
-
-    Definition of ``adding_machine``:
-
-    Returns:
-        float: The sum of the input numbers. 
     """
 
     test_hasattr = "adding_machine"
 
     @staticmethod
-    def solution():
-        """The adding_machine function."""
+    def adding_machine():
+        """
+        Write a function called ``adding_machine`` that uses the ``input()`` function three 
+        times to get three floating point numbers from the user and returns the sum of
+        the numbers. 
+
+        Definition of ``adding_machine``:
+
+        Returns:
+            float: The sum of the input numbers. 
+        """
         s = 0
         s += float(input('Enter a number: '))
         s += float(input('Enter a number: '))
