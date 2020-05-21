@@ -14,6 +14,9 @@ from p4e import testlib
 
 class T02_UserInput(testlib.TestCase):
     """
+    Note:
+        Use the ``input()`` function and convert the value to a `float`. Students need to ``import math``
+    
     Write a function called ``compute_sinc`` that asks the user to input a number and
     computes the ``sinc`` function of that number. The ``sinc`` function of ``x`` is: 
 
@@ -21,12 +24,10 @@ class T02_UserInput(testlib.TestCase):
 
         sin(x) / x 
 
-    Function definition:
+    Definition of ``compute_sinc``:
 
-    - Name: ``compute_sinc``
-    - Arguments: ``None``
-    - Returns:
-        - ``sinc(x)`` 
+    Returns:
+        float: The sinc() function computed on the input.  
     """
 
     test_hasattr = 'compute_sinc'
@@ -48,17 +49,17 @@ class T02_UserInput(testlib.TestCase):
 
 class TestAddingMachine(testlib.TestCase) :
     """
+    Note:
+        Use input and convert the results to numbers. 
+
     Write a function called ``adding_machine`` that uses the ``input()`` function three 
     times to get three floating point numbers from the user and returns the sum of
     the numbers. 
 
-    Function definition:
+    Definition of ``adding_machine``:
 
-    - Name: ``adding_machine``
-    - Arguments
-        - ``None``
-    - Returns
-        - The sum (``float``)
+    Returns:
+        float: The sum of the input numbers. 
     """
 
     test_hasattr = "adding_machine"

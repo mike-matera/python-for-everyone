@@ -9,6 +9,9 @@ from p4e import testlib
 
 class T04LetterCount(testlib.TestCase):
     """
+    Note:
+        Loop over a string to create a dictionary. Students need to handle create/add case. 
+
     Write a function called ``letter_count()`` that takes one argument called ``phrase``.
     The function returns a dictionary with letters as keys and the number of times the letter
     appears in the ``phrase`` as values. The letter count is case insensitive so "A" is the same as "a".
@@ -27,12 +30,13 @@ class T04LetterCount(testlib.TestCase):
             'r' : 1,
             'd' : 1,
         }
-    
-    - Arguments:
-        - ``phrase`` - A phrase
-    - Returns:
-        - A dictionary that counts the frequency of each letter.
-        
+
+    Function ``letter_count``: 
+
+    Arguments:
+        phrase (str): A phrase
+    Returns:
+        dict: A dictionary that counts the frequency of each letter.        
     """
 
     test_hasattr = 'letter_count'

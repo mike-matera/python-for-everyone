@@ -9,15 +9,20 @@ from p4e import testlib
 
 class T03ListFilter(testlib.TestCase):
     """
+    Note:
+        Iterate over a list, use a conditional to build a new list. 
+
     Write a function called ``list_filter()`` that takes two arguments, ``number_list`` 
     and ``limit``. ``number_list`` is a list of floats and ``limit`` is a float. 
     The function returns a list containing only the numbers in ``number_list`` that are less than or equal to ``limit``.
 
-    - Arguments:
-        - ``number_list`` - A list of floats
-        - ``limit``- Return numbers in ``number_list`` that are less than or equal to this. 
-    - Returns:
-        - The numbers in ``number_list`` that are less than or euqal to ``limit``
+    Definition of ``list_filter``:
+
+    Arguments:
+        number_list (list of float): A list of floats
+        limit (float): Return numbers in ``number_list`` that are less than or equal to this. 
+    Returns:
+        (list of float): The numbers in ``number_list`` that are less than or euqal to ``limit``
         
     """
 

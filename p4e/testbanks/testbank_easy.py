@@ -8,6 +8,9 @@ import random
 from p4e import testlib 
 
 class T00Docstrings(testlib.TestCase):
+    """
+    Your program must have a docstring at the top of the file. 
+    """
 
     def test_has_docstring(self):
         """Testing your docstring."""        
@@ -15,25 +18,27 @@ class T00Docstrings(testlib.TestCase):
 
 class T01_ArgumentReverser(testlib.TestCase):
     """
+    Note:
+        Tests arguments and return values.
+
     Write a function called ``arg_reverser`` that takes three arguments and returns 
     them in reverse order. 
 
-    Function definition:
+    Function ``arg_reverser``:
 
-    - Name: ``arg_reverser``
-    - Arguments: 
-        - ``arg1`` 
-        - ``arg2`` 
-        - ``arg3``
-    - Returns:
-        - ``arg3``, ``arg2``, ``arg1`` 
+    Args: 
+        arg1 (object): The first argument.
+        arg2 (object): The second argument.
+        arg3 (object): The third argument.
+    Returns:
+        tuple: (arg3, arg2, arg1) 
     """
 
     test_hasattr = "arg_reverser"
 
     @staticmethod
-    def solution(arg1, arg2, arg3):
-        """Reverse my arguments."""
+    def solution(arg1: object, arg2: object, arg3: object) -> tuple:
+        """Reverse arguments."""
         return (arg3, arg2, arg1)
 
     def test_01_does_reverse(self):
@@ -50,17 +55,19 @@ class T01_ArgumentReverser(testlib.TestCase):
 
 class T03_TriangeArea(testlib.TestCase):
     """
+    Note:
+        Tests arguments and return values, simple math. 
+
     Write a function called ``triangle_area`` that takes two arguments, `base` and `height`. The function returns the area
     of a triangle that has the given ``base`` and ``height``.
 
-    Function definition:
+    Function ``triangle_area``:
 
-    - Name: ``triangle_area``
-    - Arguments:
-        - ``base`` - The base of the triangle.
-        - ``height`` - The height of the triangle.
-    - Returns:
-        - The area of a triangle with ``base`` and ``height``.
+    Arguments:
+        base (float): The base of the triangle.
+        height (float): The height of the triangle.
+    Returns:
+        float: The area of a triangle with ``base`` and ``height``.
     """
 
     test_hasattr = 'triangle_area'

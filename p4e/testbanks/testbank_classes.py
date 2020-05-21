@@ -9,6 +9,9 @@ from p4e import testlib
 
 class T05Counter(testlib.TestCase):
     """
+    Note:
+        Students create a simple class with three methods and two class variables. 
+
     Write a class called ``Counter``. The class has the variables:
 
     - ``self.count`` - Keeps track of the current count.
@@ -16,18 +19,26 @@ class T05Counter(testlib.TestCase):
 
     The class has the following methods:
 
-    - ``__init__(start_num)`` - Initialize the counter with a starting count.
-        - Arguments:
-            - ``start_num`` - A number with the initial count.
-    - ``plus_one()`` - Adds one to ``self.count``
-        - Arguments: ``None``
-        - Returns: ``None``
-    - ``minus_one()`` - Subtracts one from ``self.count``
-        - Arguments: ``None``
-        - Returns: ``None``
-    - ``reset_count()`` - Sets ``self.count`` to ``self.initial_count``
-        - Arguments: ``None``
-        - Returns: ``None``
+    Definition of ``__init__``:
+
+    Arguments:
+        self (Counter): The instance 
+        start_num (int):  Initialize ``self.count`` with a starting count
+
+    Definition of ``plus_one()``. Add one to the counter. 
+
+    Arguments:
+        self (Counter): The instance 
+
+    Definition of ``minus_one()``. Subtract one from the counter. 
+
+    Arguments:
+        self (Counter): The instance 
+
+    Definition of ``reset_count()``. Reset the counter to the initial value. 
+
+    Arguments:
+        self (Counter): The instance 
     """
 
     test_hasattr = 'Counter'

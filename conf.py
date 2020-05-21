@@ -30,6 +30,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
+    'sphinx.ext.napoleon',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -57,3 +58,5 @@ html_theme = 'python_docs_theme'
 
 nbsphinx_allow_errors = True
 nbsphinx_execute = 'never'
+
+napoleon_use_rtype = False

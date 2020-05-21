@@ -10,6 +10,9 @@ from p4e import testlib
 
 class T03_FileSums(testlib.TestCase):
     """
+    Note:
+        Open and read a file, add a fixed number of values. 
+
     Write a function called ``file_sums`` that takes one argument, the name of a 
     file. The file will have four numbers on separate lines. For example::
         
@@ -21,13 +24,12 @@ class T03_FileSums(testlib.TestCase):
     The function should return ``True`` if the sum of all of the numbers in the file
     is greater than 100, ``False`` otherwise. 
 
-    Function definition: 
+    Definition of ``file_sums``: 
 
-    - Name: ``file_sums``
-    - Arguments: 
-        - A file name (``string``)
-    - Returns:
-        - ``True`` if the sum is greater than 100
+    Arguments: 
+        filename (string): A file name
+    Returns:
+        bool: ``True`` if the sum is greater than 100. Otherwise ``False``
     """
 
     test_hasattr = 'file_sums'
@@ -63,6 +65,11 @@ class T03_FileSums(testlib.TestCase):
 
 class T06_FileFibo(testlib.TestCase):
     """
+    Note:
+        Open and read and write the same file. This can be done using only 'r' and 'w' modes. 
+        Students must understand the role of ``readline()`` and ``read()``. Can be done with 
+        ``seek()``. 
+
     Write a function called ``file_fibo``. The function takes one argument, a 
     filename. The file will contain at least two lines with integers. Your 
     function should add the top two lines together, then overwrite the file, 
@@ -91,13 +98,10 @@ class T06_FileFibo(testlib.TestCase):
     (it's guaranteed to have at least two). The test program will call it 
     repeatedly. 
 
-    Function definition:
+    Definition of ``file_fibo``:
 
-    - Name: ``file_fibo``
-    - Arguments:
-        - A file name (``string``)
-    - Returns
-        - ``None``
+    Arguments:
+        filename (str): A file name
     """
 
     test_hasattr = 'file_fibo'
@@ -147,6 +151,11 @@ class T06_FileFibo(testlib.TestCase):
 
 class T07_FileDecoderRing(testlib.TestCase):
     """
+    Note:
+        A tricky problem that uses file I/O. The trick is to use ``seek()`` and to recognize that the
+        seek offset can be computed from the ``decoder_letter`` argument. Advanced students will do 
+        this using arrays and file iterators. 
+
     Write a function called ``decoder_ring`` that takes two arguments, ``decoder_file`` and ``decoder_letter``. The
     function returns a letter from the file ``decoder_file`` based on the integer in ``decoder_letter``. The contents of
     ``decoder_file`` will be a list of letters on different lines. For example::
@@ -161,14 +170,13 @@ class T07_FileDecoderRing(testlib.TestCase):
     For example if the ``decoder_letter`` is 3 for the file shown above ``decoder_ring`` should return the letter ``c``. The file will always
     have one letter on each line with no additional spaces. The function should return the letter by itself without a newline.
 
-    Function definition:
+    Definition of ``decoder_ring``:
 
-    - Name: ``decoder_ring``
-    - Arguments:
-        - ``decoder_file`` - A file that contains the decoder letters.
-        - ``decoder_letter`` - The line number of the letter to return.
-    - Returns:
-        - The letter on the specified line of the file without a newline.
+    Arguments:
+        decoder_file (str): A file that contains the decoder letters.
+        decoder_letter (int): The line number of the letter to return.
+    Returns:
+        (str): The letter on the specified line of the file without a newline.
     """
 
     test_hasattr = 'decoder_ring'

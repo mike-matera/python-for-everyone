@@ -29,9 +29,52 @@ Testbanks
 
 A test question is as a Python ``uinttest.TestCase``. The test case has a docstring that's rendered by Sphinx into HTML. The HTML is suitable to be copy-and-pasted into Canvas or any other document or LMS. The test cases can be run against a student's answer to give them feedback as to how well they answered the question. 
 
-.. toctree::
-   :maxdepth: 4
+Easy Questions 
+--------------
 
-   testbanks
+.. automodule:: p4e.testbanks.testbank_easy
+   :members:
 
 
+Questions Using ``input()``
+---------------------------
+
+.. automodule:: p4e.testbanks.testbank_input
+   :members:
+
+
+Questions Using File I/O
+------------------------
+
+.. automodule:: p4e.testbanks.testbank_files
+   :members:
+
+Questions Using Lists
+---------------------
+
+.. automodule:: p4e.testbanks.testbank_lists
+   :members:
+
+Questions Using Loops
+---------------------
+
+.. automodule:: p4e.testbanks.testbank_loops
+   :members:
+
+Questions Using Dictionaries
+----------------------------
+
+.. automodule:: p4e.testbanks.testbank_dicts
+   :members:
+
+Questions Using Classes
+-----------------------
+
+.. automodule:: p4e.testbanks.testbank_classes
+   :members:
+
+Questions Using Flask
+---------------------
+
+.. automodule:: p4e.testbanks.testbank_flask
+   :members:

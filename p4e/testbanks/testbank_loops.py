@@ -10,6 +10,9 @@ from p4e import testlib
 
 class T01AverageList(testlib.TestCase):
     """
+    Average a List
+    ============== 
+    
     Write a function called ``average_list()`` that takes a list of numbers as an
     argument and returns the average of the numbers in the list.
 
