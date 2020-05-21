@@ -37,7 +37,7 @@ class T03ListFilter(testlib.TestCase):
                 output.append(num)
         return output
 
-    def test_1_check_list(self):
+    def test_1_list_filter(self):
         """Test list_filter()"""
         nums = []
         for i in range(random.randint(20, 100)):

@@ -41,7 +41,7 @@ class T01_ArgumentReverser(testlib.TestCase):
         """
         return (arg3, arg2, arg1)
 
-    def test_01_does_reverse(self):
+    def test_1_arg_reverser(self):
         """Testing arg_reverser()"""
 
         w1 = random.choice(testlib.words()).strip()
@@ -77,7 +77,7 @@ class T03_TriangeArea(testlib.TestCase):
         """
         return (base * height) / 2 
 
-    def test_01_does_compute(self):
+    def test_1_triangle_area(self):
         """You did not properly compute the area."""
         b = random.uniform(0, 100)
         h = random.uniform(0, 100)

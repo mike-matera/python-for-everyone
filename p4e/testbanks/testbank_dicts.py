@@ -53,7 +53,7 @@ class T04LetterCount(testlib.TestCase):
                     rval[letter] += 1
         return rval
 
-    def test_1_do_random_phrase(self):
+    def test_1_letter_count(self):
         """Testing letter_count()"""
         phrase = ""
         for _ in range(random.randint(5, 10)):

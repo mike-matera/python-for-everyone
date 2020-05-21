@@ -64,7 +64,7 @@ class T05Counter(testlib.TestCase):
             self.count = self.start
 
 
-    def test_1_counter(self):
+    def test_1_Counter(self):
         """Testing your Counter class."""
         Counter = self.sandbox_class(self.test_hasattr)
 

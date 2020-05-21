@@ -32,7 +32,7 @@ class T01AverageList(testlib.TestCase):
             s += num
         return s / len(nums) 
 
-    def test_1_does_numbers(self):
+    def test_1_average_list(self):
         """Testing your average_list() function."""
         nums = []
         for i in range(random.randint(20, 100)):
@@ -72,7 +72,7 @@ class T02Running_Sum(testlib.TestCase):
             if sums >= limit:
                 return sums
 
-    def test_1_check_sum(self):
+    def test_1_running_sum(self):
         nums = []
         for i in range(random.randint(20, 100)):
             nums.append(random.uniform(1, 1000))

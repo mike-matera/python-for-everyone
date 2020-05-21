@@ -32,7 +32,7 @@ class SimpleFlask(testlib.TestCase):
     def hello():
         return 'Hello'
 
-    def test_01_test_routes(self):
+    def test_1_hello_app(self):
 
         app = self.sandobx_flask(self.test_hasattr)
         with app.run() as session:
