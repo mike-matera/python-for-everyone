@@ -13,4 +13,5 @@ ipywidgets
 sphinx
 requests_unixsocket
 python-docs-theme
+nbsphinx
 -e . 

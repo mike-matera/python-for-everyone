@@ -13,6 +13,8 @@ setuptools.setup(
 
     install_requires=[
         'pexpect', 
+        'requests_unixsocket',
+        'flask',
     ],
 
     packages=[

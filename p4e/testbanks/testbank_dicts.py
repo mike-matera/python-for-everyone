@@ -62,5 +62,5 @@ class T04LetterCount(testlib.TestCase):
 
         dut = self.sandbox_function(self.test_hasattr)
         got = dut(phrase)
-        self.compare(expected, got)
+        self.compare(got, expected)
 
