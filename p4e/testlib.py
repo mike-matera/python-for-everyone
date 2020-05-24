@@ -82,62 +82,6 @@ class TestCase(unittest.TestCase):
     """
     A wrapper around unittest.TestCase that simplifies testing student code. 
 
-    Unit tests are not a good fit for student code. Students are learning to program and 
-    make mistakes that are not common for programmers. Test code needs an additional level 
-    of sanity checking to ensure that functions are acting properly and should provide more 
-    detailed feedback when there are problems. 
-
-    This implementation of TestCase performs two important functions: 
-
-      1. It provides a wrapper around pexpect that makes interactive testing easier. 
-      2. It provides a sanbox for test functions that simplifys testing. 
-
-    Setup
-    
-    Implementations of this class must provide a variable named test_file. Test cases will
-    be automatically skipped if this file doesn't exist. 
-
-    The pexpect Wrapper 
-
-    A temporary directory is created before every test and cleaned up after every test 
-    finishes. The open function is provided so that implementers can write into the temporary
-    directory without knowing its path. For example:
-
-        with self.open('myfile.txt') as f:
-            f.write('Some stuff')
-
-    The file 'myfile.txt' will appear in the working directory of the executed program. Programs
-    are starded using the spawn() function, which returns a pexpect spawn object and can be 
-    used as a context manager:
-
-        with self.spawn(args...) as test:
-            self.expect('suff')
-            ...
-            self.sendline('other-stuff')
-
-    Using the built-in spawn function ensures proper handling of the working directory and 
-    guarantees that the session will be visible in the output of an error or failure. 
-
-    The Sandbox
-
-    It's important to test functions in isolation. In principle Python makes this very easy, 
-    but student functions must be seen as more adversarial than normal ones. For exmple, a 
-    function that uses input() when it's not supposed to will freeze the test case and be a 
-    pain. Functions can also overwrite files causing confusion. The Sandbox prevents common 
-    mistakes and extends the reach of unit tests to help students diagnose problems more quickly
-    and with less frustration. 
-
-    A sandbox is created with the sandbox_function() function. The retuned value is a callable
-    that will execute the wrapped function in a sandbox. The sandbox has the following properties:
-
-      1. Wrapping stdout - Anything written to stdout will be contained in an io.StringIO() 
-        available to test code. 
-      2. Wrapping input() - Code under test will receive supplied values on input() or take an 
-        exception. 
-      3. Wrapping open() - Code under test works on virtual files that can be accessed and limited
-        by the test harness. This abstraction is not complete, but it's useful to construct guard
-        rails on client code. 
-
     """
 
     def setUp(self):
@@ -157,11 +101,6 @@ class TestCase(unittest.TestCase):
         self.tempdir = tempfile.TemporaryDirectory()
 
     def _load_module(self):
-        """Load test_file as a module, failing if there was an error.
-        
-        Returns: A Python module.
-        """ 
-
         file = Path(self.test_file)
         try:
             mod_spec = importlib.util.spec_from_file_location(str(uuid.uuid4()), str(file))
@@ -180,13 +119,13 @@ class TestCase(unittest.TestCase):
         return open(filepath, *args, **kwargs)
 
     def spawn(self, *cmdline):
-        """Start a pexpect session and return the pexpect test. The program will be run in a temporary 
-        directory and the conversation will be echoed to sys.stdout.
+        """Start a pexpect session and return the pexpect test. The program will be run in a temporary directory and the conversation will be echoed to sys.stdout.
         
         Arguments: 
-            cmdline - A list of command line values to send to the program. 
+            cmdline (str): A list of command line values to send to the program. 
 
-        Returns: A pexpect test object (can be used as a context manager).
+        Returns: 
+            (pexpect.spawn): A pexpect test object (can be used as a context manager).
         """ 
         absfile = Path(self.test_file).resolve()
         self.test = pexpect.spawn(f'{sys.executable}', [str(absfile)] + list(cmdline), 

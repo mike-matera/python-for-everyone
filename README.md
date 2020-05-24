@@ -6,7 +6,7 @@ Learn Python with help and practice. These [Jupyter](https://jupyter.org/) noteb
 
 The notebooks have interconnected content and require installed modules. This section will show you how to get the notebooks running on your desktop. Before you begin you will need to have the following software installed:
 
-- Python >= 3.6 (with `pip` and `venv`)
+- Python >= 3.7 (with `pip` and `venv`)
 - [Bash](https://www.gnu.org/software/bash/), [zsh](https://www.gnu.org/software/bash/) or a compatible shell
 - [Git](https://git-scm.com/)
 
@@ -37,10 +37,10 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-The notebooks use `import` to access code in this project directory structure. In order for this to work the root directory of the repository should be in `$PYTHONPATH`.
+Now you can start the Jupyter server from the command line: 
 
 ```sh
-PYTHONPATH=$(pwd) jupyter lab welcome.ipynb
+jupyter lab welcome.ipynb
 ```
 
 Jupyter tries to open a new browser tab. If a browser doesn't appear after starting Jupyter open a tab manually and visit the URLs that are shown in Jupyter's output.

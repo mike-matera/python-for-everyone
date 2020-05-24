@@ -86,9 +86,9 @@ class Pen:
         
         Arguments:
 
-          turtle - (boolean) If True the turle will be visible in the output (default True)
-          arena - The coordinate space of the arena: [x_min, x_max, y_min, y_max] 
-          size - The size of the drawing in inches: [x_size, y_size]
+          turtle (bool): If True the turle will be visible in the output (default True)
+          arena (tuple): The coordinate space of the arena: [x_min, x_max, y_min, y_max] 
+          size (tuple): The size of the drawing in inches: [x_size, y_size]
         """
         plt.rcParams['figure.figsize'] = size
 

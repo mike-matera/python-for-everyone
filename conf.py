@@ -14,6 +14,8 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+from recommonmark.transform import AutoStructify
+
 # -- Project information -----------------------------------------------------
 
 project = 'Python for Everyone'
@@ -27,6 +29,7 @@ author = 'Michael Matera'
 # ones.
 extensions = [
     'nbsphinx',
+    'recommonmark',
     'sphinx.ext.autodoc',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
@@ -41,6 +44,11 @@ extensions = [
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'venv*']
 
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.txt': 'markdown',
+    '.md': 'markdown',
+}
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -60,3 +68,11 @@ nbsphinx_allow_errors = True
 nbsphinx_execute = 'never'
 
 napoleon_use_rtype = False
+
+#github_doc_root = 'https://github.com/rtfd/recommonmark/tree/master/doc/'
+def setup(app):
+    app.add_config_value('recommonmark_config', {
+            #'url_resolver': lambda url: github_doc_root + url,
+           'enable_eval_rst': True,
+            }, True)
+    app.add_transform(AutoStructify)
