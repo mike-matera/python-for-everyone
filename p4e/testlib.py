@@ -43,8 +43,7 @@ def run():
     with open(Path(__file__).parent / "simple_template.html") as t:
         template = Template(t.read())
     runner = unittest.TextTestRunner(stream=devnull, resultclass=JupyterTestResult, buffer=True)
-    with stdio_wrapper():
-        program = unittest.main(argv=['ignored'], verbosity=0, exit=False, testRunner=runner)
+    program = unittest.main(argv=['ignored'], verbosity=0, exit=False, testRunner=runner)
 
     display(HTML(template.render(
         result=program.result
@@ -58,24 +57,6 @@ def words():
         with open('/usr/share/dict/words') as f:
             _dict_words = list(f) 
     return _dict_words
-
-@contextmanager
-def stdio_wrapper(input_text=''):
-    """Wrap a function redirecting stdin/out/err""" 
-
-    stdin_buf = io.StringIO(input_text)
-    stdout_buf = io.StringIO()
-
-    stdin = sys.stdin
-    stdout = sys.stdout
-    
-    sys.stdin = stdin_buf
-    sys.stdout = stdout_buf
-    
-    yield stdout_buf
-
-    sys.stdin = stdin
-    sys.stdout = stdout
 
 
 class TestCase(unittest.TestCase):
@@ -103,11 +84,30 @@ class TestCase(unittest.TestCase):
     def _load_module(self):
         file = Path(self.test_file)
         try:
+            save_stdin = sys.stdin
+            save_stdout = sys.stdout
+            save_stderr = sys.stderr
+            save_open = builtins.open
+            sys.stdin = None
+            sys.stdout = None
+            sys.stderr = None
+            builtins.open = None
             mod_spec = importlib.util.spec_from_file_location(str(uuid.uuid4()), str(file))
             mod = importlib.util.module_from_spec(mod_spec)
             mod_spec.loader.exec_module(mod)
+
+        except SyntaxError as e:
+            self.fail("Test failed because there is a syntax error in your file.")
+
         except:
-            self.fail("Test failed because there might be code outside of a function.")
+            self.fail("Test failed because there is code outside of a function.")
+
+        finally:
+            sys.stdin = save_stdin
+            sys.stdout = save_stdout 
+            sys.stderr = save_stderr
+            builtins.open = save_open
+
         return mod
 
     def tearDown(self):
