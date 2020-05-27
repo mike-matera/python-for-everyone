@@ -136,13 +136,13 @@ class TestCase(unittest.TestCase):
                     self.what = None
                     super().__init__(*args, **kwargs)
                 
-                def expect(self, *args, **kwargs):
-                    self.what = args[0]
-                    super().expect(*args, **kwargs)
+                def expect(self, what, *args, **kwargs):
+                    self.what = what
+                    super().expect(what, *args, **kwargs)
 
-                def expect_exact(self, *args, **kwargs):
-                    self.what = args[0]
-                    super().expect_exact(*args, **kwargs)
+                def expect_exact(self, what, *args, **kwargs):
+                    self.what = what
+                    super().expect_exact(what, *args, **kwargs)
 
             spawn = SpawnWrapper(f'{sys.executable}', [str(absfile)] + list(cmdline), 
                     logfile=sys.stdout, timeout=2.0, echo=False, encoding='utf-8', 
@@ -151,7 +151,11 @@ class TestCase(unittest.TestCase):
             yield spawn 
 
         except (pexpect.exceptions.EOF,  pexpect.exceptions.TIMEOUT) as e:
-            self.fail(f"""I expected to see one of [{','.join(spawn.what)}] from your program.""")
+            if isinstance(spawn.what, list):
+                choices = ', '.join(spawn.what)
+            else:
+                choices = spawn.what
+            self.fail(f"""I expected to see one of [{choices}] from your program.""")
 
 
     def sandbox(self, attr):
