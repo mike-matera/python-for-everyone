@@ -39,7 +39,7 @@ class T01AverageList(testlib.TestCase):
             nums.append(random.uniform(1, 1000))
         exp = sum(nums) / len(nums)
 
-        average_list = self.sandbox_function('average_list')
+        average_list = self.sandbox('average_list')
         got = average_list(nums)
         self.compare(got, exp)
 
@@ -79,7 +79,7 @@ class T02Running_Sum(testlib.TestCase):
         exp = sum(nums)
         nums.append(random.uniform(1, 1000))
 
-        running_sum = self.sandbox_function(self.test_hasattr)
+        running_sum = self.sandbox(self.test_hasattr)
         running_sum.sandbox.allow_input(*nums)
         got = running_sum(exp)
         self.compare(got, exp)
