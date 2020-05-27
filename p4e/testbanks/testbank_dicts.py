@@ -60,7 +60,7 @@ class T04LetterCount(testlib.TestCase):
             phrase += random.choice(testlib.words()) + " "
         expected = self.letter_count(phrase)
 
-        dut = self.sandbox_function(self.test_hasattr)
+        dut = self.sandbox(self.test_hasattr)
         got = dut(phrase)
         self.compare(got, expected)
 

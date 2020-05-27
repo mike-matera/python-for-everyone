@@ -46,7 +46,7 @@ class T03_FileSums(testlib.TestCase):
     def test_1_file_sums(self): 
         """Checking your file_sums() function."""
 
-        file_sums = self.sandbox_function(self.test_hasattr)
+        file_sums = self.sandbox(self.test_hasattr)
 
         with file_sums.sandbox.open('small.txt', 'w') as f:
             for _ in range(4):
@@ -123,7 +123,7 @@ class T06_FileFibo(testlib.TestCase):
     def test_1_file_fibo(self):
         """Testing your file_fibo() function.""" 
 
-        file_fibo = self.sandbox_function(self.test_hasattr)
+        file_fibo = self.sandbox(self.test_hasattr)
 
         with file_fibo.sandbox.open('numbers.txt', 'w') as f:
             num1 = random.randint(1, 100)
@@ -196,7 +196,7 @@ class T07_FileDecoderRing(testlib.TestCase):
         number = random.randint(1, len(letters))
         exp = letters[number-1]
 
-        decoder_ring = self.sandbox_function(self.test_hasattr)
+        decoder_ring = self.sandbox(self.test_hasattr)
         with decoder_ring.sandbox.open('codes.txt', 'w') as fh:
             for l in letters:
                 fh.write(l + "\n")

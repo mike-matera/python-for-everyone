@@ -66,7 +66,7 @@ class T05Counter(testlib.TestCase):
 
     def test_1_Counter(self):
         """Testing your Counter class."""
-        Counter = self.sandbox_class(self.test_hasattr)
+        Counter = self.sandbox(self.test_hasattr)
 
         c = Counter(10)
         if not hasattr(c, 'count'):

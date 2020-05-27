@@ -48,7 +48,7 @@ class T01_ArgumentReverser(testlib.TestCase):
         w2 = random.choice(testlib.words()).strip()
         w3 = random.choice(testlib.words()).strip()
 
-        arg_reverser = self.sandbox_function(self.test_hasattr)
+        arg_reverser = self.sandbox(self.test_hasattr)
         got = arg_reverser(w1, w2, w3)
         self.compare(got, (w3, w2, w1))
 
@@ -82,6 +82,6 @@ class T03_TriangeArea(testlib.TestCase):
         b = random.uniform(0, 100)
         h = random.uniform(0, 100)
         exp = (b * h) / 2
-        triangle_area = self.sandbox_function(self.test_hasattr)
+        triangle_area = self.sandbox(self.test_hasattr)
         got = triangle_area(b, h)
         self.compare(got, exp)

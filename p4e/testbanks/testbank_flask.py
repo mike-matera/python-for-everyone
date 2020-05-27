@@ -34,7 +34,7 @@ class SimpleFlask(testlib.TestCase):
 
     def test_1_hello_app(self):
 
-        app = self.sandobx_flask(self.test_hasattr)
+        app = self.sandbox(self.test_hasattr)
         with app.run() as session:
             r = session.get("/", status=200)
             if r.text != "Welcome":

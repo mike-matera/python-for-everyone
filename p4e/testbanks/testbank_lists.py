@@ -44,7 +44,7 @@ class T03ListFilter(testlib.TestCase):
             nums.append(random.uniform(1, 1000))
         limit = random.uniform(400, 600)
         exp = sorted([x for x in nums if x < limit])
-        dut = self.sandbox_function(self.test_hasattr)
+        dut = self.sandbox(self.test_hasattr)
         got = sorted(dut(nums, limit))
         self.compare(exp, got)
 

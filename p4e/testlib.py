@@ -118,6 +118,7 @@ class TestCase(unittest.TestCase):
         filepath = Path(self.tempdir.name) / filename 
         return open(filepath, *args, **kwargs)
 
+    @contextmanager
     def spawn(self, *cmdline):
         """Start a pexpect session and return the pexpect test. The program will be run in a temporary directory and the conversation will be echoed to sys.stdout.
         
@@ -127,78 +128,65 @@ class TestCase(unittest.TestCase):
         Returns: 
             (pexpect.spawn): A pexpect test object (can be used as a context manager).
         """ 
+        error = None
         absfile = Path(self.test_file).resolve()
-        self.test = pexpect.spawn(f'{sys.executable}', [str(absfile)] + list(cmdline), 
-                logfile=sys.stdout, timeout=2.0, echo=False, encoding='utf-8', cwd=self.tempdir.name,
-            )
-        return self.test
+        try:
+            class SpawnWrapper(pexpect.spawn):
+                def __init__(self, *args, **kwargs):
+                    self.what = None
+                    super().__init__(*args, **kwargs)
+                
+                def expect(self, *args, **kwargs):
+                    self.what = args[0]
+                    super().expect(*args, **kwargs)
 
-    def expect(self, *values):
-        """Expect one of a list of regular expressions from the test. This is a convenience function around 
-        expect() that anticipates pexpect.EOF and pexpect.TIMEOUT so they will not cause exceptions. Returns
-        the option number that matched *starting with 1*. Therefore the return value can be interpreted as
-        a bool. 
+                def expect_exact(self, *args, **kwargs):
+                    self.what = args[0]
+                    super().expect_exact(*args, **kwargs)
 
-        Arguments:
-            values - A list of options to send to test.expect() 
+            spawn = SpawnWrapper(f'{sys.executable}', [str(absfile)] + list(cmdline), 
+                    logfile=sys.stdout, timeout=2.0, echo=False, encoding='utf-8', 
+                    cwd=self.tempdir.name,
+                )
+            yield spawn 
 
-        Returns: 0 if the pattern was not matched, or the option (starting with 1) that did match.
-        """
-        got = self.test.expect([pexpect.EOF, pexpect.TIMEOUT] + list(values))
-        if got < 2:
-            return 0
-        else:
-            return got - 1
+        except (pexpect.exceptions.EOF,  pexpect.exceptions.TIMEOUT) as e:
+            self.fail(f"""I expected to see one of [{','.join(spawn.what)}] from your program.""")
 
-    def sendline(self, line):
-        """Send a line of text to the running proces.""" 
-        self.test.sendline(line)
 
-    def sandbox_function(self, func):
-        """Factory function to create a Sandbox that wrapps the given function in the project.
+    def sandbox(self, attr):
+        """Factory function to create a Sandbox that wraps the object named in `attr` in a Sandbox. The name must be present in the project, which will be loaded if it has not been already. The argument can be the name of a class, name of a function or name of a flask application. If `attr` is a callable the callable will be wrapped without a lookup in the project.
 
         Arguments:
-            fun - The name of the function or a callable.
+            attr - The name of the function, Class or Flask app.
 
-        Returns: The function wrapped in a Sandbox.
+        Returns: The object `attr` wrapped in a Sandbox.
         """
+        if callable(attr):
+            return FunctionSandbox(self, attr) 
+
         if self.module is None:
             self.module = self._load_module()
 
-        if callable(func):
-            wrap = func
+        if not hasattr(self.module, attr):
+            self.fail(f"""Your an object named {attr} not found!""")
+
+        obj = getattr(self.module, attr)
+
+        if isinstance(obj, type):
+            if obj.__doc__ is None:
+                self.fail(f"""Class {attr} has no docstring.""")
+            return ClassSandbox(self, obj) 
+
+        elif isinstance(obj, Flask):
+            return FlaskSandbox(self, obj) 
+
+        elif callable(obj):
+            if obj.__doc__ is None:
+                self.fail(f"""Function {attr} has no docstring.""")
+            return FunctionSandbox(self, obj)
         else:
-            if not hasattr(self.module, func):
-                self.fail(f"""Your program doesn't have a function named {func}""")
-            wrap = getattr(self.module, func)
-
-        if wrap.__doc__ is None:
-            self.fail(f"""{func} has no docstring.""")
-        return FunctionSandbox(self, wrap) 
-
-    def sandbox_class(self, cls, *args, **kwargs):
-        """Wrap a class in a sandbox all instances of the class will be inside the sandbox."""
-        if self.module is None:
-            self.module = self._load_module()
-
-        if not hasattr(self.module, cls):
-            self.fail(f"""Your program doesn't have a class named {cls}""")
-        wrap = getattr(self.module, cls)
-
-        if wrap.__doc__ is None:
-            self.fail(f"""{cls} has no docstring.""")
-        return ClassSandbox(self, wrap) 
-
-    def sandobx_flask(self, app):
-        """Wrap a Flask application in a sandbox. The sandbox provides the run() function."""
-        if self.module is None:
-            self.module = self._load_module()
-
-        if not hasattr(self.module, app):
-            self.fail(f"""Your program doesn't have a variable named {app}""")
-        wrap = getattr(self.module, app)
-
-        return FlaskSandbox(self, wrap) 
+            raise ValueError(f"No Sandbox type for {attr}")
 
     def check_docstring(self, regex=r'cis(\s*|-)15'):
         """Check the project file for a docstring matching regex"""
