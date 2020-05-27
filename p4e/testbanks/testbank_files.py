@@ -48,11 +48,11 @@ class T03_FileSums(testlib.TestCase):
 
         file_sums = self.sandbox(self.test_hasattr)
 
-        with file_sums.sandbox.open('small.txt', 'w') as f:
+        with self.open('small.txt', 'w') as f:
             for _ in range(4):
                 f.write(str(random.uniform(0, 20)) + "\n")
 
-        with file_sums.sandbox.open('large.txt', 'w') as f:
+        with self.open('large.txt', 'w') as f:
             for _ in range(4):
                 f.write(str(random.uniform(75, 200)) + "\n")
 
@@ -125,7 +125,7 @@ class T06_FileFibo(testlib.TestCase):
 
         file_fibo = self.sandbox(self.test_hasattr)
 
-        with file_fibo.sandbox.open('numbers.txt', 'w') as f:
+        with self.open('numbers.txt', 'w') as f:
             num1 = random.randint(1, 100)
             num2 = random.randint(1, 100)
             f.write(f'{num2}\n')
@@ -135,7 +135,7 @@ class T06_FileFibo(testlib.TestCase):
             file_fibo('numbers.txt')
 
         try:
-            with file_fibo.sandbox.open('numbers.txt', 'r') as f:
+            with self.open('numbers.txt', 'r') as f:
                 nums = list(reversed([int(x) for x in f]))
         except:
             self.fail("The file should only contain integers!")
@@ -197,7 +197,7 @@ class T07_FileDecoderRing(testlib.TestCase):
         exp = letters[number-1]
 
         decoder_ring = self.sandbox(self.test_hasattr)
-        with decoder_ring.sandbox.open('codes.txt', 'w') as fh:
+        with self.open('codes.txt', 'w') as fh:
             for l in letters:
                 fh.write(l + "\n")
 

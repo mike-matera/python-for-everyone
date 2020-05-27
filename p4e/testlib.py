@@ -251,66 +251,29 @@ class TestCase(unittest.TestCase):
             raise ValueError("The compare function doesn't work on this type:", exp.__class__.__name__)
 
 
-class SandboxFile:
-    """Container that can be opened, read and written from the sandbox."""
-
-    class StringIOWrapper(io.StringIO):
-        """Keep file contents on close()"""
-
-        def __init__(self, vf, *args, **kwargs):
-            self.vf = vf
-            super().__init__(vf.data, *args, **kwargs)
-
-        def close(self):
-            self.vf.data = self.getvalue()
-            self.vf.io = None
-            super().close()
-
-    def __init__(self, test, name, modes, data=None):
-        self.test = test
-        self.name = name
-        self.modes = modes
-        self.data = None
-        self.io = None 
-
-    def open(self, mode, *args, **kwargs):
-        """Open a virtual file, possibly overwriting contents.""" 
-        if self.io is None: 
-            self.io = SandboxFile.StringIOWrapper(self, *args, **kwargs)
-            if mode == 'w' or mode == 'w+':
-                self.io.truncate()
-            elif mode == 'a':
-                self.io.seek(0,2)
-        else:
-            raise self.test.fail(f"Attempted to open an already opened file: {self.name}")
-
-    def close(self):
-        """Close the stream but maitain the data."""
-        if self.io is not None:
-            self.io.close()
-        else:
-            self.test.fail(f"Attempted to close an already closed file: {self.name}")
-
-
 class Sandbox:
     """A wrapper around test functions that prevents common mistakes from disrupting testing.""" 
 
     def __init__(self, test):
         """Initialize the wapper with a class that is based on unittest.TestCase and a function or class to wrap."""
         self.test = test
-        self.files = {}
         self.inputs = []
+        self.files = {}
         self.stdout = io.StringIO()
         self.stderr = io.StringIO()
         self.instance = None
+        self.save_open = None
+        self.save_input = None 
+        self.save_stdout = None
+        self.save_stderr = None 
 
     def call(self, func, *args, **kwargs):
         """Execute the wrapped function."""
         try:            
-            save_open = builtins.open
-            save_input = builtins.input
-            save_stdout = sys.stdout
-            save_stderr = sys.stderr
+            self.save_open = builtins.open
+            self.save_input = builtins.input
+            self.save_stdout = sys.stdout
+            self.save_stderr = sys.stderr
 
             builtins.open = self._open
             builtins.input = self._input
@@ -320,62 +283,17 @@ class Sandbox:
             return func(*args, **kwargs)
 
         finally:
-            builtins.open = save_open
-            builtins.input = save_input
-            sys.stdout = save_stdout 
-            sys.stderr = save_stderr 
+            builtins.open = self.save_open
+            builtins.input = self.save_input
+            sys.stdout = self.save_stdout 
+            sys.stderr = self.save_stderr 
             self.stdout.flush()
             self.stderr.flush()
 
             # Verify that files are closed. 
             for file in self.files:
-                if self.files[file].io is not None:
+                if not self.files[file].closed:
                     self.test.fail(f"""Your function exited and left {file} open.""")
-
-    def open(self, name, mode='r', clientmodes=['r', 'w', 'r+', 'w+', 'a'], *args, **kwargs):
-        """Open a virtual file. This is meant to be called from unittest code (not client code). 
-        This function takes the same arguments as open with one additional argument: clientmodes. 
-        The clientmodes argument is a list of modes that test code is allowed to open this file using. 
-        The default allows the function under test to open a file with any mode. 
-
-        Arguments:
-            name - The file name 
-            mode - The file mode passed to open (default: "r")
-            clientmodes - The modes code under test will be able to use to open this file.
-
-        Returns: A io.StringIO() to be used in place of the file. 
-        """
-        if name not in self.files:
-            self.files[name] = SandboxFile(self.test, name, clientmodes)
-        self.files[name].open(mode)
-        return self.files[name].io
-
-    def allow_open(self, name, clientmodes):
-        """Allow the function under test to open a file. If open or allow_open are not executed 
-        the function under test will fail if open() is used. This function explicitly allows the 
-        function under test to write a file without having to first put data in it using TestCase.open()
-        
-        Arguments:
-            name - The name of the file. 
-            clientmodes - The modes code under test will be able to use to open this file.
-        """
-        if name not in self.files:
-            self.files[name] = SandboxFile(self.test, name, clientmodes)
-        self.files[name].modes = clientmodes
-
-    def file_contents(self, filename):
-        """Retrieve the contents of a virtual file. Useful to compare the contents of a file to 
-        the expected contents.
-        
-        Arguments:
-            name - The file name 
-        
-        Returns: The file contents.
-        """ 
-
-        if filename not in self.files or self.files[filename].data is None:
-            self.test.fail(f"""Your function didn't create the file {filename}""")
-        return self.files[filename].data 
 
     def allow_input(self, *args):
         """Allow the function under test to run the input() function some number of times. The 
@@ -402,14 +320,19 @@ class Sandbox:
 
     def _open(self, filename, mode='r', *args, **kwargs):
         """The open function that is exposed to the function under test.""" 
-        if filename not in self.files:
-            self.test.fail(f"""Wrong filename in open: {filename} expected one of: {list(self.files.keys())}""")
+        filepath = Path(filename)
+        tempdir = Path(self.test.tempdir.name) 
         
-        if mode not in self.files[filename].modes:
-            self.test.fail(f"""Wrong file mode in open: {mode} expected one of: {self.files[filename].modes}""")
+        if filepath.is_absolute():
+            try:
+                filepath = filepath.relative_to(tempdir)
+            except:
+                self.test.fail(f"""You should not open a file using an absolute path: {filename}""")
 
-        self.files[filename].open(mode, *args, **kwargs)
-        return self.files[filename].io
+        fh = self.save_open(tempdir / filepath, mode, *args, **kwargs)
+        self.files[filename] = fh
+
+        return fh
 
     def _input(self, prompt=None):
         """The input function that is exposed to the function under test."""
