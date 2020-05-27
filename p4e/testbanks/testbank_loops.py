@@ -80,6 +80,5 @@ class T02Running_Sum(testlib.TestCase):
         nums.append(random.uniform(1, 1000))
 
         running_sum = self.sandbox(self.test_hasattr)
-        running_sum.sandbox.allow_input(*nums)
-        got = running_sum(exp)
+        got = running_sum(exp, sandbox_inputs=nums)
         self.compare(got, exp)

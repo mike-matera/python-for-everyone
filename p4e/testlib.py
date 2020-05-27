@@ -273,7 +273,13 @@ class Sandbox:
 
     def call(self, func, *args, **kwargs):
         """Execute the wrapped function."""
-        try:            
+        try:
+            if 'sandbox_inputs' in kwargs:
+                self.inputs = list(kwargs['sandbox_inputs'])
+                del kwargs['sandbox_inputs']
+            else:
+                self.inputs = list()
+
             self.save_open = builtins.open
             self.save_input = builtins.input
             self.save_stdout = sys.stdout
@@ -299,15 +305,6 @@ class Sandbox:
                 if not self.files[file].closed:
                     self.test.fail(f"""Your function exited and left {file} open.""")
 
-    def allow_input(self, *args):
-        """Allow the function under test to run the input() function some number of times. The 
-        argument is a list of values to be returned by input(). When the list is exhausted the 
-        function will fail when input() is run.
-
-        Arguments:
-            *args - A list of inputs. Appended to the existing list. 
-        """
-        self.inputs += args
 
     def expect(self, pattern):
         """Look in the function's stdout for a particular pattern. Fail if it is not found."""        
