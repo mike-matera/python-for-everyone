@@ -42,7 +42,7 @@ class T02_UserInput(testlib.TestCase):
         x = random.uniform(0, 2 * math.pi)
         compute_sinc = self.sandbox(self.test_hasattr)
         exp = math.sin(x) / x 
-        got = compute_sinc(x, sandbox_inputs=[x])
+        got = compute_sinc(x, with_input=[x])
         self.compare(got, exp)
 
 
@@ -79,5 +79,5 @@ class TestAddingMachine(testlib.TestCase) :
         n3 = random.random()
         adding_machine = self.sandbox(self.test_hasattr)
         exp = n1 + n2 + n3
-        got = adding_machine(sandbox_inputs=[n1, n2, n3])
+        got = adding_machine(with_input=[n1, n2, n3])
         self.compare(got, exp)

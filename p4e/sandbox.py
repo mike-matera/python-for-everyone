@@ -3,6 +3,7 @@ A Sandbox for student code.
 """
 
 import io
+import re
 import sys
 import time
 import builtins
@@ -33,9 +34,9 @@ class Sandbox:
     def call(self, func, *args, **kwargs):
         """Execute the wrapped function."""
         try:
-            if 'sandbox_inputs' in kwargs:
-                self.inputs = list(kwargs['sandbox_inputs'])
-                del kwargs['sandbox_inputs']
+            if 'with_input' in kwargs:
+                self.inputs = list(kwargs['with_input'])
+                del kwargs['with_input']
             else:
                 self.inputs = list()
 
