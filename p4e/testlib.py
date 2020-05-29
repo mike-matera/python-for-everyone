@@ -70,6 +70,8 @@ class TestCase(unittest.TestCase):
         if not self.absfile.exists():
             raise unittest.SkipTest(f"""File {self.test_file} not found!""")
         self.absfile = self.absfile.resolve()
+        with open(self.absfile) as fh:
+            self.source = fh.read()
 
         self.module = None
         if hasattr(self, 'test_hasattr'):
@@ -188,13 +190,8 @@ class TestCase(unittest.TestCase):
         else:
             raise ValueError(f"No Sandbox type for {attr}")
 
-    def check_docstring(self, regex=r'cis(\s*|-)15'):
-        """Check the project file for a docstring matching regex"""
-        with open(self.absfile) as f:
-            contents = f.read()
-        self.assertIsNotNone(re.search(regex, contents, re.I),
-                                "Your source file doesn't seem to have the right docstring")
-        return None
+    def get_source(self):
+        return self.source
 
     def compare(self, got, exp):
         """Compare complex types for value equality. This is a convenience to simplify the 
