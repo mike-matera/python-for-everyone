@@ -66,9 +66,10 @@ class TestCase(unittest.TestCase):
     def setUp(self):
         """Per-test setup. Skipps tests if self.test_file is not found."""
         super().setUp()
-        file = Path(self.test_file)
-        if not file.exists():
-            raise unittest.SkipTest(f"""File {file} not found!""")
+        self.absfile = Path(self.test_file)
+        if not self.absfile.exists():
+            raise unittest.SkipTest(f"""File {self.test_file} not found!""")
+        self.absfile = self.absfile.resolve()
 
         self.module = None
         if hasattr(self, 'test_hasattr'):
@@ -76,11 +77,17 @@ class TestCase(unittest.TestCase):
             if not hasattr(self.module, self.test_hasattr):
                 raise unittest.SkipTest(f"""Attribute {self.test_hasattr} not found in {self.module.__file__}.""")
 
-        # Create a scratch area.
+        # Create a scratch area and make it the working directory.
         self.tempdir = tempfile.TemporaryDirectory()
+        self.save_wd = os.getcwd()
+        os.chdir(self.tempdir.name)
+
+    def tearDown(self):
+        # Restore wd 
+        os.chdir(self.save_wd)
+        self.tempdir.cleanup()
 
     def _load_module(self):
-        file = Path(self.test_file)
         try:
             save_stdin = sys.stdin
             save_stdout = sys.stdout
@@ -90,7 +97,7 @@ class TestCase(unittest.TestCase):
             sys.stdout = None
             sys.stderr = None
             builtins.open = None
-            mod_spec = importlib.util.spec_from_file_location(str(uuid.uuid4()), str(file))
+            mod_spec = importlib.util.spec_from_file_location(str(uuid.uuid4()), str(self.absfile))
             mod = importlib.util.module_from_spec(mod_spec)
             mod_spec.loader.exec_module(mod)
 
@@ -108,14 +115,6 @@ class TestCase(unittest.TestCase):
 
         return mod
 
-    def tearDown(self):
-        self.tempdir.cleanup()
-
-    def open(self, filename, *args, **kwargs):
-        """Open a file in the scratch area. Arguments are passed to open(). Can be used as a context manager."""
-        filepath = Path(self.tempdir.name) / filename 
-        return open(filepath, *args, **kwargs)
-
     @contextmanager
     def spawn(self, *cmdline):
         """Start a pexpect session and return the pexpect test. The program will be run in a temporary directory and the conversation will be echoed to sys.stdout.
@@ -127,7 +126,6 @@ class TestCase(unittest.TestCase):
             (pexpect.spawn): A pexpect test object (can be used as a context manager).
         """ 
         error = None
-        absfile = Path(self.test_file).resolve()
         try:
             class SpawnWrapper(pexpect.spawn):
                 def __init__(self, *args, **kwargs):
@@ -142,7 +140,7 @@ class TestCase(unittest.TestCase):
                     self.what = what
                     super().expect_exact(what, *args, **kwargs)
 
-            spawn = SpawnWrapper(f'{sys.executable}', [str(absfile)] + list(cmdline), 
+            spawn = SpawnWrapper(f'{sys.executable}', [str(self.absfile)] + list(cmdline), 
                     logfile=sys.stdout, timeout=2.0, echo=False, encoding='utf-8', 
                     cwd=self.tempdir.name,
                 )
@@ -192,8 +190,7 @@ class TestCase(unittest.TestCase):
 
     def check_docstring(self, regex=r'cis(\s*|-)15'):
         """Check the project file for a docstring matching regex"""
-        file = Path(self.test_file)
-        with open(file) as f:
+        with open(self.absfile) as f:
             contents = f.read()
         self.assertIsNotNone(re.search(regex, contents, re.I),
                                 "Your source file doesn't seem to have the right docstring")
