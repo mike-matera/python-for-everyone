@@ -4,6 +4,7 @@ This is a testbank of easy questions.
 These are free points on a test.
 """
 
+import re
 import random
 from p4e import testlib 
 
@@ -13,8 +14,9 @@ class T00Docstrings(testlib.TestCase):
     """
 
     def test_has_docstring(self):
-        """Testing your docstring."""        
-        self.check_docstring()
+        """Testing your docstring."""
+        if re.search(r'(?i)cis[ -]15', self.source) is None:
+            self.fail('Your source file does not have a docstring')
 
 class T01_ArgumentReverser(testlib.TestCase):
     """

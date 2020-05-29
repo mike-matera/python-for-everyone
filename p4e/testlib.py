@@ -63,6 +63,15 @@ class TestCase(unittest.TestCase):
 
     """
 
+    def __init__(self, *args, **kwargs):
+        """Initialize public attributes"""
+        super().__init__(*args, **kwargs)
+
+        self.absfile = None
+        self.source = None
+        self.module = None 
+        
+
     def setUp(self):
         """Per-test setup. Skipps tests if self.test_file is not found."""
         super().setUp()
@@ -189,9 +198,6 @@ class TestCase(unittest.TestCase):
             return FunctionSandbox(self, obj)
         else:
             raise ValueError(f"No Sandbox type for {attr}")
-
-    def get_source(self):
-        return self.source
 
     def compare(self, got, exp):
         """Compare complex types for value equality. This is a convenience to simplify the 
