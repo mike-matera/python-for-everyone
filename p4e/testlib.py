@@ -14,6 +14,7 @@ import importlib.util
 import pexpect
 import tempfile
 import builtins
+import traceback
 from contextlib import contextmanager
 from pathlib import Path
 from jinja2 import Template 
@@ -23,26 +24,81 @@ from IPython.core.display import display, HTML
 
 from .sandbox import ClassSandbox, FlaskSandbox, FunctionSandbox
 
-class JupyterTestResult(unittest.TextTestResult):
+
+class JupyterTestResult(unittest.TestResult):
     """A test result class that is rendered into a Jupyter notebook.
     
     The only difference between this and TextTestResult is that successes are recorded. 
     """ 
+
+    class _Result:
+
+        def __init__(self, label, alert, test, result, message=None, exc_info=None):
+            self.label = label
+            self.style = alert
+            self.test_name = test.id().split('.')[-1]
+            self.test_descr = test.shortDescription()
+            self.stdout = sys.stdout.getvalue()
+            self.stderr = sys.stderr.getvalue()
+            self.message = message
+            if exc_info is None:
+                self.long_message = None 
+            else:
+                tb_e = traceback.TracebackException(*exc_info)
+                self.message = str(exc_info[1])
+                self.long_message = "".join(list(tb_e.format()))
+
+
     def __init__(self, stream, descriptions, verbosity):
         super().__init__(stream, descriptions, verbosity)
-        self.successes = []
+        self.results = []
+        self.run_cnt = 0
+        self.passed_cnt = 0 
+        self.failed_cnt = 0
+        self.skipped_cnt = 0 
+    
+    def addError(self, test, err):
+        self.results.append(JupyterTestResult._Result("ERROR", 'danger', test, self, exc_info=err))
+        self.run_cnt += 1 
+        self.failed_cnt += 1 
+        
+    def addExpectedFailure(self, test, err):
+        self.results.append(JupyterTestResult._Result("(OK)FAIL", 'success', test, self, exc_info=err))
+        self.run_cnt += 1 
+        self.passed_cnt += 1 
+        self.failed_cnt += 1 
+
+    def addFailure(self, test, err):
+        self.results.append(JupyterTestResult._Result("FAIL", 'danger', test, self, exc_info=err))
+        self.run_cnt += 1 
+        self.failed_cnt += 1 
+
+    def addSkip(self, test, reason):
+        self.results.append(JupyterTestResult._Result("SKIP", 'warning', test, self, message=reason))
+        self.run_cnt += 1 
+        self.skipped_cnt += 1 
 
     def addSuccess(self, test):
-        self.successes.append((test, None))
+        self.results.append(JupyterTestResult._Result("PASS", 'success', test, self))
+        self.run_cnt += 1 
+        self.passed_cnt += 1 
+
+    def addUnexpectedSuccess(self, test): 
+        self.results.append(JupyterTestResult._Result("(BAD)PASS", 'danger', test, self))
+        self.run_cnt += 1 
+        self.failed_cnt += 1 
+
+    def __repr__(self):
+        return f"""{self.__class__.__name__} run={self.run_cnt} passed={self.passed_cnt} failed={self.failed_cnt} skipped={self.skipped_cnt}"""
 
 def run():
     """Run unit tests in a Jupyter notebook. The test results are rendered as simple HTML"""
-    devnull = io.StringIO()
-    with open(Path(__file__).parent / "simple_template.html") as t:
+    with open(Path(__file__).parent / "template.html") as t:
         template = Template(t.read())
-    runner = unittest.TextTestRunner(stream=devnull, resultclass=JupyterTestResult, buffer=True)
+    runner = unittest.TextTestRunner(stream=io.StringIO(), verbosity=0, buffer=True, resultclass=JupyterTestResult)
     program = unittest.main(argv=['ignored'], verbosity=0, exit=False, testRunner=runner)
 
+    print(program.result)
     display(HTML(template.render(
         result=program.result
     )))
@@ -70,7 +126,7 @@ class TestCase(unittest.TestCase):
         self.absfile = None
         self.source = None
         self.module = None 
-        
+
 
     def setUp(self):
         """Per-test setup. Skipps tests if self.test_file is not found."""
@@ -86,7 +142,7 @@ class TestCase(unittest.TestCase):
         if hasattr(self, 'test_hasattr'):
             self.module = self._load_module()
             if not hasattr(self.module, self.test_hasattr):
-                raise unittest.SkipTest(f"""Attribute {self.test_hasattr} not found in {self.module.__file__}.""")
+                raise unittest.SkipTest(f"""Attribute {self.test_hasattr} not found in {self.test_file}.""")
 
         # Create a scratch area and make it the working directory.
         self.tempdir = tempfile.TemporaryDirectory()

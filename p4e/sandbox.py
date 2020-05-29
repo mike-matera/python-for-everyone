@@ -40,6 +40,12 @@ class Sandbox:
             else:
                 self.inputs = list()
 
+            if 'check_return' in kwargs:
+                checktype = kwargs['check_return']
+                del kwargs['check_return']
+            else:
+                checktype = None
+
             self.save_open = builtins.open
             self.save_input = builtins.input
             self.save_stdout = sys.stdout
@@ -50,7 +56,11 @@ class Sandbox:
             sys.stdout = self.stdout
             sys.stderr = self.stderr
 
-            return func(*args, **kwargs)
+            rval = func(*args, **kwargs)
+            if checktype is not None and not isinstance(rval, checktype):
+                self.test.fail(f"""Your function was supposed to return {checktype.__name__} but returned {rval.__class__.__name__} instead.""")
+
+            return rval
 
         finally:
             builtins.open = self.save_open
@@ -64,7 +74,6 @@ class Sandbox:
             for file in self.files:
                 if not self.files[file].closed:
                     self.test.fail(f"""Your function exited and left {file} open.""")
-
 
     def expect(self, pattern):
         """Look in the function's stdout for a particular pattern. Fail if it is not found."""        
