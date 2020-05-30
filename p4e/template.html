@@ -34,6 +34,9 @@
 
 </style>
 
+{% macro kvp(name) -%}
+{%- for k in name  %}{{k}}={{name[k]}}{{ ", " if not loop.last }}{% endfor %}
+{%- endmacro %}
 
 <div class="grid-container">
 
@@ -77,6 +80,21 @@
 		</div>
 	</div>
 {% endif %}
+
+{% if r.trace %}
+	<div class="grid-item-label">
+		Call Trace
+		<span id="label_trace_{{ r.test_name }}" onclick="showHideContent('trace_{{ r.test_name }}')" style="cursor: pointer;">&#9658;</span>
+	 </div>
+	<div class="grid-item-result">
+		<div id="content_trace_{{ r.test_name }}" style="display: none;">
+			{%- for t in r.trace  %}
+				<pre>{{ t[0] }}({{ t[1][0] | join(', ') }}{{ kvp(t[1][1]) }}) returned: {{ t[2] }}</pre>
+			{% endfor %}
+		</div>
+	</div>
+{% endif %}
+
 {% endfor %}
 
 <script>

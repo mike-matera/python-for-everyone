@@ -62,6 +62,10 @@ class Sandbox:
 
             return rval
 
+        except Exception as e: 
+            rval = e 
+            raise e 
+                    
         finally:
             builtins.open = self.save_open
             builtins.input = self.save_input
@@ -74,6 +78,9 @@ class Sandbox:
             for file in self.files:
                 if not self.files[file].closed:
                     self.test.fail(f"""Your function exited and left {file} open.""")
+
+            # Add me to the trace log. 
+            self.test.trace.append((func.__name__, (args, kwargs), rval))
 
     def expect(self, pattern):
         """Look in the function's stdout for a particular pattern. Fail if it is not found."""        

@@ -25,22 +25,23 @@ from IPython.core.display import display, HTML
 from .sandbox import ClassSandbox, FlaskSandbox, FunctionSandbox
 
 
-class JupyterTestResult(unittest.TestResult):
-    """A test result class that is rendered into a Jupyter notebook.
-    
-    The only difference between this and TextTestResult is that successes are recorded. 
+class DetailedTestResult(unittest.TestResult):
+    """
+    An implementation of unittest.TestResult that keeps result information instead of flattening it
+    into a string and keeps a unified list of results in the same order that tests were run.  
     """ 
 
     class _Result:
 
-        def __init__(self, label, alert, test, result, message=None, exc_info=None):
+        def __init__(self, label, visual, test, result, message=None, exc_info=None):
             self.label = label
-            self.style = alert
+            self.style = visual
             self.test_name = test.id().split('.')[-1]
             self.test_descr = test.shortDescription()
             self.stdout = sys.stdout.getvalue()
             self.stderr = sys.stderr.getvalue()
             self.message = message
+            self.trace = list(test.trace)
             if exc_info is None:
                 self.long_message = None 
             else:
@@ -58,33 +59,33 @@ class JupyterTestResult(unittest.TestResult):
         self.skipped_cnt = 0 
     
     def addError(self, test, err):
-        self.results.append(JupyterTestResult._Result("ERROR", 'danger', test, self, exc_info=err))
+        self.results.append(DetailedTestResult._Result("ERROR", 'danger', test, self, exc_info=err))
         self.run_cnt += 1 
         self.failed_cnt += 1 
         
     def addExpectedFailure(self, test, err):
-        self.results.append(JupyterTestResult._Result("(OK)FAIL", 'success', test, self, exc_info=err))
+        self.results.append(DetailedTestResult._Result("(OK)FAIL", 'success', test, self, exc_info=err))
         self.run_cnt += 1 
         self.passed_cnt += 1 
         self.failed_cnt += 1 
 
     def addFailure(self, test, err):
-        self.results.append(JupyterTestResult._Result("FAIL", 'danger', test, self, exc_info=err))
+        self.results.append(DetailedTestResult._Result("FAIL", 'danger', test, self, exc_info=err))
         self.run_cnt += 1 
         self.failed_cnt += 1 
 
     def addSkip(self, test, reason):
-        self.results.append(JupyterTestResult._Result("SKIP", 'warning', test, self, message=reason))
+        self.results.append(DetailedTestResult._Result("SKIP", 'warning', test, self, message=reason))
         self.run_cnt += 1 
         self.skipped_cnt += 1 
 
     def addSuccess(self, test):
-        self.results.append(JupyterTestResult._Result("PASS", 'success', test, self))
+        self.results.append(DetailedTestResult._Result("PASS", 'success', test, self))
         self.run_cnt += 1 
         self.passed_cnt += 1 
 
     def addUnexpectedSuccess(self, test): 
-        self.results.append(JupyterTestResult._Result("(BAD)PASS", 'danger', test, self))
+        self.results.append(DetailedTestResult._Result("(BAD)PASS", 'danger', test, self))
         self.run_cnt += 1 
         self.failed_cnt += 1 
 
@@ -95,7 +96,7 @@ def run():
     """Run unit tests in a Jupyter notebook. The test results are rendered as simple HTML"""
     with open(Path(__file__).parent / "template.html") as t:
         template = Template(t.read())
-    runner = unittest.TextTestRunner(stream=io.StringIO(), verbosity=0, buffer=True, resultclass=JupyterTestResult)
+    runner = unittest.TextTestRunner(stream=io.StringIO(), verbosity=0, buffer=True, resultclass=DetailedTestResult)
     program = unittest.main(argv=['ignored'], verbosity=0, exit=False, testRunner=runner)
 
     print(program.result)
@@ -126,7 +127,7 @@ class TestCase(unittest.TestCase):
         self.absfile = None
         self.source = None
         self.module = None 
-
+        self.trace = []
 
     def setUp(self):
         """Per-test setup. Skipps tests if self.test_file is not found."""
