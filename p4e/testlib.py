@@ -96,12 +96,18 @@ class DetailedTestResult(unittest.TestResult):
     def __repr__(self):
         return f"""{self.__class__.__name__} run={self.run_cnt} passed={self.passed_cnt} failed={self.failed_cnt} skipped={self.skipped_cnt}"""
 
-def run():
+def run(testname=None):
     """Run unit tests in a Jupyter notebook. The test results are rendered as simple HTML"""
     with open(Path(__file__).parent / "template.html") as t:
         template = Template(t.read())
     runner = unittest.TextTestRunner(stream=io.StringIO(), verbosity=0, buffer=True, resultclass=DetailedTestResult)
-    program = unittest.main(argv=['ignored'], verbosity=0, exit=False, testRunner=runner)
+
+    if testname is None:
+        program = unittest.main(argv=['ignored'], verbosity=0, exit=False, testRunner=runner)
+        result = program.result
+    else:
+        tests = unittest.defaultTestLoader.loadTestsFromTestCase(testname)
+        result = runner.run(tests)
 
     def format_trace(t):
         args = []
@@ -113,7 +119,7 @@ def run():
         return f"""{repr(t[2])} &crarr; {t[0]}({", ".join(args)})"""
 
     display(HTML(template.render(
-        result=program.result,
+        result=result,
         format_trace=format_trace,
     )))
 
