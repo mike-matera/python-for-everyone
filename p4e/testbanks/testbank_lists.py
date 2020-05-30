@@ -38,7 +38,7 @@ class T03ListFilter(testlib.TestCase):
         return output
 
     def test_1_list_filter(self):
-        """Test list_filter()"""
+        """Testing list_filter()"""
         nums = []
         for i in range(random.randint(20, 100)):
             nums.append(random.uniform(1, 1000))

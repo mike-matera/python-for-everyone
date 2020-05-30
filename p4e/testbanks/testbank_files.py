@@ -44,7 +44,7 @@ class T03_FileSums(testlib.TestCase):
         return s > 100
 
     def test_1_file_sums(self): 
-        """Checking your file_sums() function."""
+        """Testing file_sums()"""
 
         file_sums = self.sandbox(self.test_hasattr)
 
@@ -121,7 +121,7 @@ class T06_FileFibo(testlib.TestCase):
             fh.write(the_rest)
 
     def test_1_file_fibo(self):
-        """Testing your file_fibo() function.""" 
+        """Testing file_fibo()""" 
 
         file_fibo = self.sandbox(self.test_hasattr)
 
@@ -189,7 +189,7 @@ class T07_FileDecoderRing(testlib.TestCase):
             return fh.read(1)
 
     def test_01_decoder_ring(self):
-        """Testing your decoder_ring()"""
+        """Testing decoder_ring()"""
         letters = ""
         for _ in range(random.randint(1,1)):
             letters += random.choice(testlib.words()).strip()
