@@ -25,9 +25,7 @@ from pathlib import Path
 from jinja2 import Template 
 from flask import Flask, request
 from werkzeug.exceptions import HTTPException
-
-from IPython.core.display import display, HTML
-
+from IPython.core.display import display, HTML 
 
 class DetailedTestResult(unittest.TestResult):
     """
@@ -45,7 +43,11 @@ class DetailedTestResult(unittest.TestResult):
             self.stdout = sys.stdout.getvalue()
             self.stderr = sys.stderr.getvalue()
             self.message = message
-            self.trace = list(test.trace)
+            if hasattr(test, 'trace'):
+                self.trace = list(test.trace)
+            else:
+                self.trace = []
+
             if exc_info is None:
                 self.long_message = None 
             else:
@@ -84,7 +86,7 @@ class DetailedTestResult(unittest.TestResult):
         self.skipped_cnt += 1 
 
     def addSuccess(self, test):
-        self.results.append(DetailedTestResult._Result("PASS", 'success', test, self))
+        self.results.append(DetailedTestResult._Result("OK", 'success', test, self))
         self.run_cnt += 1 
         self.passed_cnt += 1 
 
@@ -96,10 +98,12 @@ class DetailedTestResult(unittest.TestResult):
     def __repr__(self):
         return f"""{self.__class__.__name__} run={self.run_cnt} passed={self.passed_cnt} failed={self.failed_cnt} skipped={self.skipped_cnt}"""
 
-def run(testname=None):
+def run(testname=None, template="template.html"):
     """Run unit tests in a Jupyter notebook. The test results are rendered as simple HTML"""
-    with open(Path(__file__).parent / "template.html") as t:
+
+    with open(Path(__file__).parent / "templates" / template) as t:
         template = Template(t.read())
+
     runner = unittest.TextTestRunner(stream=io.StringIO(), verbosity=0, buffer=True, resultclass=DetailedTestResult)
 
     if testname is None:
@@ -118,10 +122,17 @@ def run(testname=None):
         
         return f"""{repr(t[2])} &crarr; {t[0]}({", ".join(args)})"""
 
-    display(HTML(template.render(
+    return template.render(
         result=result,
         format_trace=format_trace,
-    )))
+    )
+
+def check(func, message="Failed!"):
+    class _wrapper(unittest.TestCase):
+        def test(self):
+            if not func():
+                self.fail(message)
+    display(HTML(run(_wrapper, template="compact.html")))
 
 _dict_words = None
 def words():
@@ -155,18 +166,31 @@ class TestCase(unittest.TestCase):
     def setUp(self):
         """Per-test setup. Skipps tests if self.test_file is not found."""
         super().setUp()
-        self.absfile = Path(self.test_file)
-        if not self.absfile.exists():
-            raise unittest.SkipTest(f"""File {self.test_file} not found!""")
-        self.absfile = self.absfile.resolve()
-        with open(self.absfile) as fh:
-            self.source = fh.read()
 
-        self.module = None
-        if hasattr(self, 'test_hasattr'):
-            self.module = self._load_module()
+        if not hasattr(self, 'test_file'):
+            self.test_file = None 
+        
+        if not hasattr(self, 'test_hasattr'):
+            self.test_hasattr = None 
+
+        if self.test_file is None and self.test_hasattr is None: 
+            raise unittest.SkipTest(f"""Nothing to test.""")        
+
+        if self.test_file is not None:
+            self.absfile = Path(self.test_file)
+            if not self.absfile.exists():
+                raise unittest.SkipTest(f"""File {self.test_file} not found!""")
+            self.absfile = self.absfile.resolve()
+            with open(self.absfile) as fh:
+                self.source = fh.read()
+            self.module = None 
+        else:
+            self.module = sys.modules['__main__']
+
+        if self.test_hasattr is not None:
+            self._ensure_load_module()
             if not hasattr(self.module, self.test_hasattr):
-                raise unittest.SkipTest(f"""Attribute {self.test_hasattr} not found in {self.test_file}.""")
+                raise unittest.SkipTest(f"""Attribute {self.test_hasattr} not found in {self.module.__name__}.""")
 
         # Create a scratch area and make it the working directory.
         self.tempdir = tempfile.TemporaryDirectory()
@@ -178,7 +202,11 @@ class TestCase(unittest.TestCase):
         os.chdir(self.save_wd)
         self.tempdir.cleanup()
 
-    def _load_module(self):
+    def _ensure_load_module(self):
+
+        if self.module is not None:
+            return 
+
         try:
             save_stdin = sys.stdin
             save_stdout = sys.stdout
@@ -204,7 +232,7 @@ class TestCase(unittest.TestCase):
             sys.stderr = save_stderr
             builtins.open = save_open
 
-        return mod
+        self.module = mod
 
     @contextmanager
     def spawn(self, *cmdline):
@@ -256,8 +284,7 @@ class TestCase(unittest.TestCase):
         if callable(attr):
             return FunctionSandbox(self, attr) 
 
-        if self.module is None:
-            self.module = self._load_module()
+        self._ensure_load_module()
 
         if not hasattr(self.module, attr):
             self.fail(f"""Your an object named {attr} not found!""")

@@ -44,9 +44,10 @@ def main():
         print("""[{r.label}] {r.test_descr}""".format(r=r))
         if r.message is not None:
             print("""\tReason: {r.message}""".format(r=r))
+            print(r.long_message + "\n\n")
         for t in r.trace:
             print(t)
-    #print(stream.getvalue())
+    print(stream.getvalue())
 
 test_cache = None
 
