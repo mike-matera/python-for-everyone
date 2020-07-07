@@ -1,4 +1,5 @@
 # Python for Everyone
+#Heidi is in the file
 
 Learn Python with help and practice. These [Jupyter](https://jupyter.org/) notebooks support my [CIS-15](http://www.lifealgorithmic.com/cis-15a.html) class at [Cabrillo College](https://www.cabrillo.edu/). The notebooks teach the principles of programming with activities that give you practice and projects to challeng you.
 
