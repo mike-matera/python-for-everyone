@@ -1,9 +1,10 @@
 FROM jupyter/scipy-notebook
 
 RUN conda install xeus-python
-RUN jupyter labextension install ipycanvas @jupyterlab/debugger
 RUN pip install ipycanvas 
+RUN jupyter labextension install ipycanvas @jupyterlab/debugger
 
-COPY Lesson* /home/jovyan/notebooks/
+COPY --chown=jovyan:users . /home/jovyan/
+RUN pip install -r /home/jovyan/requirements.txt 
 
 ENV JUPYTER_ENABLE_LAB yes
