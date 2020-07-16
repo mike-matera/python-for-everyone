@@ -38,7 +38,7 @@ class T02_UserInput(testlib.TestCase):
         return math.sin(x) / x 
 
     def test_1_compute_sinc(self):
-        """Testing compute_sinc"""
+        """Testing compute_sinc()"""
         x = random.uniform(0, 2 * math.pi)
         compute_sinc = self.sandbox(self.test_hasattr)
         exp = math.sin(x) / x 
@@ -73,7 +73,7 @@ class TestAddingMachine(testlib.TestCase) :
         return s 
 
     def test_1_adding_machine(self) : 
-        """Testing your adding_machine function."""
+        """Testing adding_machine()"""
         n1 = random.random()
         n2 = random.random()
         n3 = random.random()

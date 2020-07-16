@@ -1,0 +1,40 @@
+<style>
+	
+	.grid-container {
+	  display: grid;
+	  grid-template-columns: 7em auto;
+	  grid-gap: 10px;
+	}
+	
+	.grid-item-icon {
+		text-align: center;
+	}
+	
+	.grid-item {
+		text-align: left;
+	}
+
+ 	.alert-fail {
+		/*color: var(--jp-error-color0);*/
+		color: blue;
+
+		background-color: var(--jp-error-color3);
+  		border-color: var(--jp-error-color2);	
+	}
+	</style>
+	
+	<div class="grid-container">
+	{%- for r in result.results  %}
+	<div class="grid-item-icon">
+		<div class="alert-{{r.style}}">
+			<strong>{{r.label}}</strong>
+		  </div>
+	</div>
+	<div class="grid-item">
+		{% if r.message %}
+			<pre>{{ r.message }}</pre>
+		{% endif %}
+	</div>
+	{% endfor %}
+	</div>
+	

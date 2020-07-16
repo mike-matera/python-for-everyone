@@ -9,6 +9,7 @@ import io
 import sys
 import unittest
 import inspect 
+from p4e.testlib import DetailedTestResult 
 
 MIN_PYTHON = (3, 7)
 assert sys.version_info >= MIN_PYTHON, f"requires Python {'.'.join([str(n) for n in MIN_PYTHON])} or newer"
@@ -35,9 +36,18 @@ def load():
 def main():
     """Execute the tests."""
     tests = load()
-    runner = unittest.TextTestRunner(verbosity=3)
-    runner.run(tests)
+    stream = io.StringIO()
+    runner = unittest.TextTestRunner(stream=stream, buffer=True, verbosity=0, resultclass=DetailedTestResult)
+    result = runner.run(tests)
 
+    for r in result.results:        
+        print("""[{r.label}] {r.test_descr}""".format(r=r))
+        if r.message is not None:
+            print("""\tReason: {r.message}""".format(r=r))
+            print(r.long_message + "\n\n")
+        for t in r.trace:
+            print(t)
+    print(stream.getvalue())
 
 test_cache = None
 

@@ -4,6 +4,7 @@ This is a testbank of easy questions.
 These are free points on a test.
 """
 
+import re
 import random
 from p4e import testlib 
 
@@ -13,8 +14,9 @@ class T00Docstrings(testlib.TestCase):
     """
 
     def test_has_docstring(self):
-        """Testing your docstring."""        
-        self.check_docstring()
+        """Testing docstring"""
+        if re.search(r'(?i)cis[ -]15', self.source) is None:
+            self.fail('Your source file does not have a docstring')
 
 class T01_ArgumentReverser(testlib.TestCase):
     """
@@ -78,7 +80,7 @@ class T03_TriangeArea(testlib.TestCase):
         return (base * height) / 2 
 
     def test_1_triangle_area(self):
-        """You did not properly compute the area."""
+        """Testing triangle_area()"""
         b = random.uniform(0, 100)
         h = random.uniform(0, 100)
         exp = (b * h) / 2

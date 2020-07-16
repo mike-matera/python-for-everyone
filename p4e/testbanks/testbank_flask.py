@@ -33,7 +33,7 @@ class SimpleFlask(testlib.TestCase):
         return 'Hello'
 
     def test_1_hello_app(self):
-
+        """Testing Flask application hello_app"""
         app = self.sandbox(self.test_hasattr)
         with app.run() as session:
             r = session.get("/", status=200)
