@@ -4,127 +4,102 @@ A simple implementation of turtle graphics for teaching algorithms.
 Author: Mike Matera
 """
 
-import math
-from PIL import Image
-from pathlib import Path
-import matplotlib.pyplot as plt
+import math 
+import pathlib 
 
+from ipycanvas import MultiCanvas, hold_canvas
+from ipywidgets import Image
 
-class Pen:
-    """A class that implements simple turtle-style graphics."""
+from IPython.display import display 
 
-    _Scale = 1
-    _TurtleIcon = Image.open(Path(__file__).parent / "turtle.png")
-    _TurtleScale = 10
+class Turtle:
 
-    class _stroke:
-        """A line pen segment with attributes."""
+    def __init__(self, size=(400,400)):
+        self._canvas = MultiCanvas(width=size[0], height=size[1])
+        self._current = (size[0]//2, size[1]//2)
+        self._cur_heading = (3 * math.pi) / 2 # in Canvas Y is negative.
+        self._pendown = True 
+        self._show = True       
+        self._turtle = Image.from_file(pathlib.Path(__file__).parent / "turtle.png")
+        self._draw_turtle()
 
-        def __init__(self, origin, prev=None):
-            self.points = [origin]
-            if prev is None:
-                self.color = "blue"
-                self.width = 1
-            else:
-                self.color = prev.color
-                self.width = prev.width
-
-    def __init__(self):
-        self.current = (0, 0)
-        self.cur_heading = math.pi / 2
-        self.strokes = [Pen._stroke(self.current)]
-        self.pendown = True
-        self.bgimage = None
+    def _draw_turtle(self):
+        """Update the position of the turtle."""
+        with hold_canvas(self._canvas[2]):
+            self._canvas[2].reset_transform()
+            self._canvas[2].clear()
+            if self._show:
+                self._canvas[2].translate(self._current[0], self._current[1])
+                self._canvas[2].rotate(self._cur_heading - (3 * math.pi) / 2)
+                self._canvas[2].draw_image(self._turtle, x=-15, y=-15, \
+                    width=30, height=30)
 
     def draw(self, distance):
         """Move the pen by distance."""
-        self.current = (self.current[0] + math.cos(self.cur_heading) * distance * Pen._Scale,
-                        self.current[1] + math.sin(self.cur_heading) * distance * Pen._Scale)
-        if self.pendown:
-            self.strokes[-1].points.append(self.current)
+        start = self._current
+        self._current = (self._current[0] + math.cos(self._cur_heading) * distance,
+                        self._current[1] + math.sin(self._cur_heading) * distance)                        
+        if self._pendown:
+            self._canvas[1].begin_path()
+            self._canvas[1].move_to(*start)
+            self._canvas[1].line_to(*self._current)
+            self._canvas[1].stroke()
+        self._draw_turtle()
 
     def turn(self, degrees):
         """Turn the pen by degrees"""
-        self.cur_heading = (self.cur_heading + math.radians(degrees)) % (math.pi * 2)
+        self._cur_heading = (self._cur_heading - math.radians(degrees)) % (math.pi * 2)
+        self._draw_turtle()
 
     def goto(self, x, y):
         """Goto a point in the coordinate space."""
-        self.current = (x * Pen._Scale, y * Pen._Scale)
+        start = self._current
+        self._current = (x, y)
         if self.pendown:
-            self.strokes[-1].points.append(self.current)
+            self._canvas[1].begin_path()
+            self._canvas[1].move_to(*start)
+            self._canvas[1].line_to(*self._current)
+            self._canvas[1].stroke()
+        self._draw_turtle()
 
     def heading(self, heading):
         """Set the pen to face heading."""
-        self.cur_heading = math.radians(heading)
+        self._cur_heading = -math.radians(heading)
+        self._draw_turtle()
 
     def up(self):
         """Pick the pen up. Movements won't make lines."""
-        self.pendown = False
+        self._pendown = False
 
     def down(self):
         """Put the pen down. Movements will make lines."""
-        self.strokes.append(Pen._stroke(self.current, self.strokes[-1]))
-        self.pendown = True
+        self._pendown = True
 
     def color(self, color):
         """Set the pen color."""
-        self.strokes.append(Pen._stroke(self.current, self.strokes[-1]))
-        self.strokes[-1].color = color
+        self._canvas[1].stroke_style = color
 
     def width(self, width):
         """Set the line thickness."""
-        self.strokes.append(Pen._stroke(self.current, self.strokes[-1]))
-        self.strokes[-1].width = width
+        self._canvas[1].line_width = width 
+
+    def show(self):
+        """Show the turtle in the scene.""" 
+        self._show = True 
+        self._draw_turtle()
+        return self._canvas
+
+    def hide(self):
+        """Hide the turtle in the scene.""" 
+        self._show = False 
+        self._draw_turtle()
+        return self._canvas
 
     def background(self, filename):
         """Set a background image.""" 
-        self.bgimage = Image.open(filename)
-        self.bgimage.load()
-
-    def show(self, turtle=True, arena=(-100, 100, -100, 100), size=(6, 6)):
-        """Show the current drawing and reset all drawing state. 
-        
-        Arguments:
-
-          turtle (bool): If True the turle will be visible in the output (default True)
-          arena (tuple): The coordinate space of the arena: [x_min, x_max, y_min, y_max] 
-          size (tuple): The size of the drawing in inches: [x_size, y_size]
-        """
-        plt.rcParams['figure.figsize'] = size
-
-        plt.clf()
-        plt.cla()
-
-        try:
-            plt.axis(False)
-            plt.axis(arena)
-
-            if self.bgimage is not None: 
-                plt.imshow(self.bgimage, extent=arena)
-
-            cax = plt.gca()
-            for stroke in self.strokes:
-                cax.add_line(plt.Polygon(
-                    stroke.points, color=stroke.color,
-                    closed=None, fill=None, linewidth=stroke.width)
-                )
-
-            if turtle:
-                xmin, xmax, ymin, ymax = arena
-                xsize = xmax - xmin
-                ysize = ymax - ymin
-                turtlesize = max(xsize, ysize) / Pen._TurtleScale / 2
-                turtle = Pen._TurtleIcon.rotate(math.degrees(self.cur_heading - math.pi / 2))
-                extent = (self.current[0] - turtlesize,
-                        self.current[0] + turtlesize,
-                        self.current[1] - turtlesize,
-                        self.current[1] + turtlesize)
-                plt.imshow(turtle, extent=extent)
-
-            plt.show()
-
-        finally:
-            self.__init__()
-
-
-pen = Pen()
+        img = Image.from_file(filename)
+        self._canvas[0].draw_image(img, x=0, y=0, \
+            width=self._canvas[0].size[0], height=self._canvas[0].size[1])
+            
+    def _ipython_display_(self):
+        display(self._canvas)
