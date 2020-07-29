@@ -1,5 +1,0 @@
-This is example.txt
-Roses are red, 
-violets are blue, 
-Programs need files, 
-and so do you. 
