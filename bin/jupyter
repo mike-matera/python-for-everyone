@@ -1,0 +1,7 @@
+#! /bin/bash 
+
+docker run --rm -it -p 8888:8888 \
+	--user $(id -u) --group-add $(id -g) \
+	-v $(pwd):/home/jovyan/content \
+	mikematera/python-for-everyone:latest 
+
