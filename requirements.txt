@@ -15,4 +15,4 @@ requests_unixsocket
 python-docs-theme
 nbsphinx
 recommonmark
--e . 
+-e Packages
