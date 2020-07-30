@@ -1,4 +1,4 @@
-FROM mikematera/p4e-stack
+FROM mikematera/p4e-stack:release-20200730
 
 COPY --chown=jovyan:users requirements.txt /home/jovyan/content/
 COPY --chown=jovyan:users Lessons /home/jovyan/content/Lessons/
