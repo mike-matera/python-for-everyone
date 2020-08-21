@@ -127,6 +127,30 @@ def run(testname=None, template="template.html"):
         format_trace=format_trace,
     )
 
+def test_file(file, testdir, pattern):
+    """Load tests from testdir matching pattern and run them agains file
+    
+    Returns: 
+        result - testlib.DetailedTestResult 
+        stream - STDIO from the test run. 
+    """
+    suite = unittest.defaultTestLoader.discover(testdir, pattern=pattern)
+    for test in flatten(suite):
+        test.test_file = file
+    stream = io.StringIO()
+    runner = unittest.TextTestRunner(stream=stream, buffer=True, verbosity=0, resultclass=DetailedTestResult)
+    result = runner.run(suite)
+    return result, stream
+
+
+def flatten(tests):
+    """Flatten tests so I can use them as a list."""
+    for test in tests:
+        if isinstance(test, unittest.suite.TestSuite):
+            yield from flatten(test)
+        else:              
+            yield test
+            
 def check(func, message="Failed!"):
     class _wrapper(unittest.TestCase):
         def test(self):
@@ -162,6 +186,14 @@ class TestCase(unittest.TestCase):
         self.inputs = []
         self.save_open = None 
         self.save_input = None 
+
+        class SandboxHelper:
+            """A proxy object that makes it easy to access sandboxed functions."""
+            def __getattribute__(inner_self, attr):
+                self._ensure_load_module()
+                return self.sandbox(attr)
+
+        self.sb = SandboxHelper()
 
     def setUp(self):
         """Per-test setup. Skipps tests if self.test_file is not found."""
