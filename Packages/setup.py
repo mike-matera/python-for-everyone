@@ -15,6 +15,7 @@ setuptools.setup(
         'pexpect', 
         'requests_unixsocket',
         'flask',
+        'jupyter',
     ],
 
     packages=[
