@@ -190,7 +190,8 @@ class TestCase(unittest.TestCase):
         class SandboxHelper:
             """A proxy object that makes it easy to access sandboxed functions."""
             def __getattribute__(inner_self, attr):
-                self._ensure_load_module()
+                if attr == 'exec':
+                    return self.sandbox(lambda x: exec(x))
                 return self.sandbox(attr)
 
         self.sb = SandboxHelper()
@@ -204,9 +205,6 @@ class TestCase(unittest.TestCase):
         
         if not hasattr(self, 'test_hasattr'):
             self.test_hasattr = None 
-
-        if self.test_file is None and self.test_hasattr is None: 
-            raise unittest.SkipTest(f"""Nothing to test.""")        
 
         if self.test_file is not None:
             self.absfile = Path(self.test_file)
@@ -341,6 +339,11 @@ class TestCase(unittest.TestCase):
     def _sandbox_call(self, func, *args, **kwargs):
         """Execute a wrapped function."""
         try:
+            self.save_open = builtins.open
+            self.save_input = builtins.input
+            save_stdout = sys.stdout
+            save_stderr = sys.stderr
+
             if 'with_input' in kwargs:
                 self.inputs = list(kwargs['with_input'])
                 del kwargs['with_input']
@@ -353,10 +356,13 @@ class TestCase(unittest.TestCase):
             else:
                 checktype = None
 
-            self.save_open = builtins.open
-            self.save_input = builtins.input
-            save_stdout = sys.stdout
-            save_stderr = sys.stderr
+            if 'stdout' in kwargs:
+                sys.stdout = kwargs['stdout']
+                del kwargs['stdout']
+
+            if 'stderr' in kwargs:
+                sys.stderr = kwargs['stderr']
+                del kwargs['stderr']
 
             builtins.open = self._sandbox_open
             builtins.input = self._sandbox_input
@@ -372,6 +378,8 @@ class TestCase(unittest.TestCase):
         finally:
             builtins.open = self.save_open
             builtins.input = self.save_input
+            sys.stdout = save_stdout
+            sys.stderr = save_stderr
 
             # Verify that files are closed. 
             for file in self.files:
