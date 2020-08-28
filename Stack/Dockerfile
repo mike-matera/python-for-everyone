@@ -5,10 +5,10 @@
 FROM jupyter/scipy-notebook:6d42503c684f
 
 USER root
-RUN apt update -y && apt install -y openssh-client && apt clean -y
+RUN apt update -y && apt install -y openssh-client wamerican && apt clean -y
 USER $NB_UID
 RUN conda install xeus-python && conda clean --all
-RUN pip install ipycanvas jupyterlab-git jupyterlab
+RUN pip install ipycanvas jupyterlab-git jupyterlab 
 RUN jupyter labextension install ipycanvas @jupyterlab/debugger @jupyterlab/git
 
 ENV JUPYTER_ENABLE_LAB yes
