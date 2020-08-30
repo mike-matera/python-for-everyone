@@ -1,4 +1,4 @@
-FROM mikematera/p4e-stack:release-20200730
+FROM mikematera/p4e-stack:release-20200828
 
 USER $NB_UID
 COPY --chown=jovyan:users . ${HOME}
