@@ -384,7 +384,7 @@ class TestCase(unittest.TestCase):
             # Verify that files are closed. 
             for file in self.files:
                 if not self.files[file].closed:
-                    self.test.fail(f"""Your function exited and left {file} open.""")
+                    self.fail(f"""Your function exited and left {file} open.""")
 
             # Add me to the trace log. 
             self.trace.append((func.__name__, (args, kwargs), rval))
