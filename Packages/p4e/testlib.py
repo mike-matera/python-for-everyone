@@ -414,7 +414,7 @@ class TestCase(unittest.TestCase):
     def _sandbox_input(self, prompt=None):
         """The input function that is exposed to the function under test."""
         if len(self.inputs) == 0:
-            self.test.fail("""You should not use input in this function (or you've used it too many times).""")
+            self.fail("""You should not use input in this function (or you've used it too many times).""")
         print(prompt, end="")
         return str(self.inputs.pop(0))
 
