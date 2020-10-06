@@ -416,7 +416,7 @@ class TestCase(unittest.TestCase):
         if len(self.inputs) == 0:
             self.test.fail("""You should not use input in this function (or you've used it too many times).""")
         print(prompt, end="")
-        return str(self.inputs.pop(0)) + '\n'
+        return str(self.inputs.pop(0))
 
     def compare(self, got, exp):
         """Compare complex types for value equality. This is a convenience to simplify the 
