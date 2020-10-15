@@ -142,6 +142,28 @@ def test_file(file, testdir, pattern):
     result = runner.run(suite)
     return result, stream
 
+def safe_load_module(file, docregex=None):
+
+    try:
+        save_stdin = sys.stdin
+        save_stdout = sys.stdout
+        save_stderr = sys.stderr
+        save_open = builtins.open
+        sys.stdin = None
+        sys.stdout = None
+        sys.stderr = None
+        builtins.open = None
+        mod_spec = importlib.util.spec_from_file_location(str(uuid.uuid4()), str(file))
+        mod = importlib.util.module_from_spec(mod_spec)
+        mod_spec.loader.exec_module(mod)
+
+    finally:
+        sys.stdin = save_stdin
+        sys.stdout = save_stdout 
+        sys.stderr = save_stderr
+        builtins.open = save_open
+
+    return mod 
 
 def flatten(tests):
     """Flatten tests so I can use them as a list."""
@@ -233,35 +255,14 @@ class TestCase(unittest.TestCase):
         self.tempdir.cleanup()
 
     def _ensure_load_module(self):
-
         if self.module is not None:
             return 
-
         try:
-            save_stdin = sys.stdin
-            save_stdout = sys.stdout
-            save_stderr = sys.stderr
-            save_open = builtins.open
-            sys.stdin = None
-            sys.stdout = None
-            sys.stderr = None
-            builtins.open = None
-            mod_spec = importlib.util.spec_from_file_location(str(uuid.uuid4()), str(self.absfile))
-            mod = importlib.util.module_from_spec(mod_spec)
-            mod_spec.loader.exec_module(mod)
-
+            mod = safe_load_module(self.absfile)
         except SyntaxError as e:
             self.fail("Test failed because there is a syntax error in your file.")
-
         except:
             self.fail("Test failed because there is code outside of a function.")
-
-        finally:
-            sys.stdin = save_stdin
-            sys.stdout = save_stdout 
-            sys.stderr = save_stderr
-            builtins.open = save_open
-
         self.module = mod
 
     @contextmanager
