@@ -16,6 +16,7 @@ setuptools.setup(
         'requests_unixsocket',
         'flask',
         'jupyter',
+        'beautifulsoup4',
     ],
 
     packages=[
