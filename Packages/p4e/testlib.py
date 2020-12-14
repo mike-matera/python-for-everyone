@@ -469,6 +469,10 @@ class TestCase(unittest.TestCase):
                 if message is not None: 
                     return f"""Dictionary value mismatch on key {k}: {message}"""
 
+        elif exp is None:
+            if got is not None:
+                return f"""The value should be None"""
+
         else:
             raise ValueError("The compare function doesn't work on this type:", exp.__class__.__name__)
 
