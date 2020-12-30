@@ -339,6 +339,13 @@ class TestCase(unittest.TestCase):
 
     def _sandbox_call(self, func, *args, **kwargs):
         """Execute a wrapped function."""
+
+        checktype = None
+
+        # Protect against recursive sandboxing... 
+        if self.save_open is not None:
+            raise RuntimeError("ERROR: Recursive sandbox.")
+
         try:
             self.save_open = builtins.open
             self.save_input = builtins.input
@@ -354,8 +361,6 @@ class TestCase(unittest.TestCase):
             if 'check_return' in kwargs:
                 checktype = kwargs['check_return']
                 del kwargs['check_return']
-            else:
-                checktype = None
 
             if 'stdout' in kwargs:
                 sys.stdout = kwargs['stdout']
@@ -381,6 +386,8 @@ class TestCase(unittest.TestCase):
             builtins.input = self.save_input
             sys.stdout = save_stdout
             sys.stderr = save_stderr
+            self.save_input = None
+            self.save_open = None
 
             # Verify that files are closed. 
             for file in self.files:
@@ -426,7 +433,7 @@ class TestCase(unittest.TestCase):
 
         The self.fail() method will be executed if there is a mismatch. 
 
-        Argumengs:
+        Arguments:
             got - The value given by test code. 
             exp - The golen (or expected) value. 
 
@@ -469,6 +476,10 @@ class TestCase(unittest.TestCase):
                 if message is not None: 
                     return f"""Dictionary value mismatch on key {k}: {message}"""
 
+        elif exp is None:
+            if got is not None:
+                return f"""The value should be None"""
+
         else:
             raise ValueError("The compare function doesn't work on this type:", exp.__class__.__name__)
 
@@ -488,21 +499,23 @@ class ClassSandbox:
     """A sandbox implementation for a class and its methods."""
 
     def __init__(self, test, cls):
-        self.test = test
-        self.cls = cls 
+        self._sb_test = test
+        self._sb_cls = cls 
+        self._sb_inst = None 
 
     def __call__(self, *args, **kwargs):
-        """Call the class constructor and wrap the instnace.""" 
-        class _SandboxWrapper(self.cls):
-            def __getattribute__(inner_self, name):
-                attr = self.cls.__getattribute__(inner_self, name)
-                if callable(attr):
-                    def call_wrapper(*args, **kwargs):
-                        return self.test._sandbox_call(attr, *args, **kwargs)
-                    return call_wrapper
-                return attr 
+        """Call the class constructor and return myself."""
+        self._sb_inst = self._sb_test._sandbox_call(self._sb_cls, *args, **kwargs)
+        return self
 
-        return self.test._sandbox_call(_SandboxWrapper, *args, **kwargs)
+    def __getattr__(self, name):
+        if self._sb_inst is None:
+            raise AttributeError(f"Sandboxed class is not constructed.")
+        attr = self._sb_inst.__getattribute__(name)
+        if callable(attr):
+            return lambda *args, **kwargs: self._sb_test._sandbox_call(attr, *args, **kwargs)
+        else:
+            return attr
 
 
 class FlaskSandbox:
