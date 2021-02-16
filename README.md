@@ -1,4 +1,5 @@
 # Python for Everyone
+#Heidi is in the file
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mike-matera/python-for-everyone/main?urlpath=lab)
 
