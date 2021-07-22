@@ -142,6 +142,28 @@ def test_file(file, testdir, pattern):
     result = runner.run(suite)
     return result, stream
 
+def safe_load_module(file, docregex=None):
+
+    try:
+        save_stdin = sys.stdin
+        save_stdout = sys.stdout
+        save_stderr = sys.stderr
+        save_open = builtins.open
+        sys.stdin = None
+        sys.stdout = None
+        sys.stderr = None
+        builtins.open = None
+        mod_spec = importlib.util.spec_from_file_location(str(uuid.uuid4()), str(file))
+        mod = importlib.util.module_from_spec(mod_spec)
+        mod_spec.loader.exec_module(mod)
+
+    finally:
+        sys.stdin = save_stdin
+        sys.stdout = save_stdout 
+        sys.stderr = save_stderr
+        builtins.open = save_open
+
+    return mod 
 
 def flatten(tests):
     """Flatten tests so I can use them as a list."""
@@ -190,7 +212,8 @@ class TestCase(unittest.TestCase):
         class SandboxHelper:
             """A proxy object that makes it easy to access sandboxed functions."""
             def __getattribute__(inner_self, attr):
-                self._ensure_load_module()
+                if attr == 'exec':
+                    return self.sandbox(lambda x: exec(x))
                 return self.sandbox(attr)
 
         self.sb = SandboxHelper()
@@ -204,9 +227,6 @@ class TestCase(unittest.TestCase):
         
         if not hasattr(self, 'test_hasattr'):
             self.test_hasattr = None 
-
-        if self.test_file is None and self.test_hasattr is None: 
-            raise unittest.SkipTest(f"""Nothing to test.""")        
 
         if self.test_file is not None:
             self.absfile = Path(self.test_file)
@@ -235,35 +255,14 @@ class TestCase(unittest.TestCase):
         self.tempdir.cleanup()
 
     def _ensure_load_module(self):
-
         if self.module is not None:
             return 
-
         try:
-            save_stdin = sys.stdin
-            save_stdout = sys.stdout
-            save_stderr = sys.stderr
-            save_open = builtins.open
-            sys.stdin = None
-            sys.stdout = None
-            sys.stderr = None
-            builtins.open = None
-            mod_spec = importlib.util.spec_from_file_location(str(uuid.uuid4()), str(self.absfile))
-            mod = importlib.util.module_from_spec(mod_spec)
-            mod_spec.loader.exec_module(mod)
-
+            mod = safe_load_module(self.absfile)
         except SyntaxError as e:
             self.fail("Test failed because there is a syntax error in your file.")
-
         except:
             self.fail("Test failed because there is code outside of a function.")
-
-        finally:
-            sys.stdin = save_stdin
-            sys.stdout = save_stdout 
-            sys.stderr = save_stderr
-            builtins.open = save_open
-
         self.module = mod
 
     @contextmanager
@@ -340,7 +339,19 @@ class TestCase(unittest.TestCase):
 
     def _sandbox_call(self, func, *args, **kwargs):
         """Execute a wrapped function."""
+
+        checktype = None
+
+        # Protect against recursive sandboxing... 
+        if self.save_open is not None:
+            raise RuntimeError("ERROR: Recursive sandbox.")
+
         try:
+            self.save_open = builtins.open
+            self.save_input = builtins.input
+            save_stdout = sys.stdout
+            save_stderr = sys.stderr
+
             if 'with_input' in kwargs:
                 self.inputs = list(kwargs['with_input'])
                 del kwargs['with_input']
@@ -350,13 +361,14 @@ class TestCase(unittest.TestCase):
             if 'check_return' in kwargs:
                 checktype = kwargs['check_return']
                 del kwargs['check_return']
-            else:
-                checktype = None
 
-            self.save_open = builtins.open
-            self.save_input = builtins.input
-            save_stdout = sys.stdout
-            save_stderr = sys.stderr
+            if 'stdout' in kwargs:
+                sys.stdout = kwargs['stdout']
+                del kwargs['stdout']
+
+            if 'stderr' in kwargs:
+                sys.stderr = kwargs['stderr']
+                del kwargs['stderr']
 
             builtins.open = self._sandbox_open
             builtins.input = self._sandbox_input
@@ -372,11 +384,15 @@ class TestCase(unittest.TestCase):
         finally:
             builtins.open = self.save_open
             builtins.input = self.save_input
+            sys.stdout = save_stdout
+            sys.stderr = save_stderr
+            self.save_input = None
+            self.save_open = None
 
             # Verify that files are closed. 
             for file in self.files:
                 if not self.files[file].closed:
-                    self.test.fail(f"""Your function exited and left {file} open.""")
+                    self.fail(f"""Your function exited and left {file} open.""")
 
             # Add me to the trace log. 
             self.trace.append((func.__name__, (args, kwargs), rval))
@@ -406,9 +422,9 @@ class TestCase(unittest.TestCase):
     def _sandbox_input(self, prompt=None):
         """The input function that is exposed to the function under test."""
         if len(self.inputs) == 0:
-            self.test.fail("""You should not use input in this function (or you've used it too many times).""")
+            self.fail("""You should not use input in this function (or you've used it too many times).""")
         print(prompt, end="")
-        return str(self.inputs.pop(0)) + '\n'
+        return str(self.inputs.pop(0))
 
     def compare(self, got, exp):
         """Compare complex types for value equality. This is a convenience to simplify the 
@@ -417,7 +433,7 @@ class TestCase(unittest.TestCase):
 
         The self.fail() method will be executed if there is a mismatch. 
 
-        Argumengs:
+        Arguments:
             got - The value given by test code. 
             exp - The golen (or expected) value. 
 
@@ -460,6 +476,10 @@ class TestCase(unittest.TestCase):
                 if message is not None: 
                     return f"""Dictionary value mismatch on key {k}: {message}"""
 
+        elif exp is None:
+            if got is not None:
+                return f"""The value should be None"""
+
         else:
             raise ValueError("The compare function doesn't work on this type:", exp.__class__.__name__)
 
@@ -479,21 +499,23 @@ class ClassSandbox:
     """A sandbox implementation for a class and its methods."""
 
     def __init__(self, test, cls):
-        self.test = test
-        self.cls = cls 
+        self._sb_test = test
+        self._sb_cls = cls 
+        self._sb_inst = None 
 
     def __call__(self, *args, **kwargs):
-        """Call the class constructor and wrap the instnace.""" 
-        class _SandboxWrapper(self.cls):
-            def __getattribute__(inner_self, name):
-                attr = self.cls.__getattribute__(inner_self, name)
-                if callable(attr):
-                    def call_wrapper(*args, **kwargs):
-                        return self.test._sandbox_call(attr, *args, **kwargs)
-                    return call_wrapper
-                return attr 
+        """Call the class constructor and return myself."""
+        self._sb_inst = self._sb_test._sandbox_call(self._sb_cls, *args, **kwargs)
+        return self
 
-        return self.test._sandbox_call(_SandboxWrapper, *args, **kwargs)
+    def __getattr__(self, name):
+        if self._sb_inst is None:
+            raise AttributeError(f"Sandboxed class is not constructed.")
+        attr = self._sb_inst.__getattribute__(name)
+        if callable(attr):
+            return lambda *args, **kwargs: self._sb_test._sandbox_call(attr, *args, **kwargs)
+        else:
+            return attr
 
 
 class FlaskSandbox:

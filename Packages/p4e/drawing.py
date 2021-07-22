@@ -22,6 +22,7 @@ class Turtle:
         
     def clear(self):
         """Clear the canvas and start over."""
+        self._canvas[2].reset_transform()
         self._canvas.clear()
         self._current = (self._size[0]//2, self._size[1]//2)
         self._cur_heading = (3 * math.pi) / 2 # in Canvas Y is negative.
@@ -32,8 +33,8 @@ class Turtle:
     def _draw_turtle(self):
         """Update the position of the turtle."""
         with hold_canvas(self._canvas[2]):
-            self._canvas[2].clear()
             self._canvas[2].reset_transform()
+            self._canvas[2].clear()
             if self._show:
                 self._canvas[2].translate(self._current[0], self._current[1])
                 self._canvas[2].rotate(self._cur_heading - (3 * math.pi) / 2)
