@@ -1,10 +1,7 @@
+nbgitpuller
 jupyterlab-git
 ipycanvas
-nbgitpuller
-pandas
 requests
-ipywidgets
-sql
 ipython-sql
 folium
 -e Packages
