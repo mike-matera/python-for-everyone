@@ -1,18 +1,10 @@
-jupyter
-jupyterlab
-flask
-numpy
+jupyterlab-git
+ipycanvas
+nbgitpuller
 pandas
-toyplot
 requests
-calysto
-matplotlib
-scipy
-seaborn
 ipywidgets
-sphinx
-requests_unixsocket
-python-docs-theme
-nbsphinx
-recommonmark
+sql
+ipython-sql
+folium
 -e Packages
