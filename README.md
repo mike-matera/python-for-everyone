@@ -2,17 +2,11 @@
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mike-matera/python-for-everyone/main?urlpath=lab)
 
-Learn Python with help and practice. These [Jupyter](https://jupyter.org/) notebooks support my [CIS-15](http://www.lifealgorithmic.com/cis-15a.html) class at [Cabrillo College](https://www.cabrillo.edu/). The notebooks teach the principles of programming with activities that give you practice and projects to challeng you.
+Learn Python with help and practice. These [Jupyter](https://jupyter.org/) notebooks support my [CIS-15](https://www.lifealgorithmic.com/cis-15/index.html) class at [Cabrillo College](https://www.cabrillo.edu/). The notebooks teach the principles of programming with activities that give you practice and projects to challenge you.
 
 ## Using the Notebooks
 
-It has never been easier to use this course content. Just click the "Binder" badge at the top of this page. The notebooks load with all of the lessons and labs ready to go. Binder sessions aren't saved but you can download individual notebooks to your computer and re-upload them to Binder next time. If you would like to take a deeper dive into the notebooks on your own computer the best way is to use the [Docker Hub](https://hub.docker.com/repository/docker/mikematera/python-for-everyone) images that are built from this repository. New to Docker? It's quite easy to get started! Follow the instructions to [install Docker](https://docs.docker.com/get-docker/). From the command line you can launch the Jupyter Lab server with this command: 
-
-```bash 
-$ docker run -it -p 8888:8888 mikematera/python-for-everyone
-```
-
-The result is just like starting a local Jupyter server and you will be able to connect to Jupyter using the `127.0.0.1` URL provided.
+It has never been easier to use this course content. Just click the "Binder" badge at the top of this page. The notebooks load with all of the lessons and labs ready to go. Binder sessions aren't saved but you can download individual notebooks to your computer and re-upload them to Binder next time. 
 
 ## Contributing
 

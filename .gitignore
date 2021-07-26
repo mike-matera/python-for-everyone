@@ -6,3 +6,15 @@ venv*
 *.egg-info
 _build
 .bash_history
+
+## Ignore these so repo2docker works better with a live repo.
+.bash_logout
+.bashrc
+.cache/
+.conda/
+.ipython/
+.jupyter/
+.local/
+.npm/
+.profile
+.wget-hsts
