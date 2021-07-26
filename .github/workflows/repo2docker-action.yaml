@@ -1,6 +1,10 @@
 name: Build and Push Image
 on: push
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  
 jobs:
   binder:
     runs-on: ubuntu-latest
