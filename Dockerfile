@@ -8,6 +8,6 @@ RUN apt update -y && apt install -y openssh-client wamerican tree && apt clean -
 USER $NB_UID
 COPY --chown=jovyan:users . ${HOME}
 RUN pip install -r requirements.txt
-RUN jupyter labextension install ipycanvas @jupyterlab/debugger @jupyterlab/git
+RUN jupyter labextension install ipycanvas @jupyterlab/git
 
 ENV JUPYTER_ENABLE_LAB yes
