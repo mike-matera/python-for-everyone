@@ -14,7 +14,7 @@ from IPython.display import display
 
 class Turtle:
 
-    def __init__(self, size=(400,400)):
+    def __init__(self, size=(600,300)):
         self._size = size
         self._canvas = MultiCanvas(width=size[0], height=size[1])
         self._turtle = Image.from_file(pathlib.Path(__file__).parent / "turtle.png")
