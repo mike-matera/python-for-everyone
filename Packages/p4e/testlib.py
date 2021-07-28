@@ -19,6 +19,9 @@ import time
 import threading
 import requests 
 import requests_unixsocket
+import shutil 
+import pathlib 
+import subprocess
 
 from contextlib import contextmanager
 from pathlib import Path
@@ -26,6 +29,124 @@ from jinja2 import Template
 from flask import Flask, request
 from werkzeug.exceptions import HTTPException
 from IPython.core.display import display, HTML 
+
+
+def run(testname=None, template="template.html"):
+    """Run unit tests in a Jupyter notebook. The test results are rendered as simple HTML"""
+
+    with open(Path(__file__).parent / "templates" / template) as t:
+        template = Template(t.read())
+
+    runner = unittest.TextTestRunner(stream=io.StringIO(), verbosity=0, buffer=True, resultclass=DetailedTestResult)
+
+    if testname is None:
+        program = unittest.main(argv=['ignored'], verbosity=0, exit=False, testRunner=runner)
+        result = program.result
+    else:
+        tests = unittest.defaultTestLoader.loadTestsFromTestCase(testname)
+        result = runner.run(tests)
+
+    def format_trace(t):
+        args = []
+        for a in t[1][0]:
+            args.append(repr(a))
+        for k, v in t[1][1].items():
+            args.append(f"{k}={repr(v)}")
+        
+        return f"""{repr(t[2])} &crarr; {t[0]}({", ".join(args)})"""
+
+    return template.render(
+        result=result,
+        format_trace=format_trace,
+    )
+
+def run_checker(test_file):
+    url = 'https://storage.googleapis.com/p4e-resoureces/checker'
+    checker = 'checker-binary'
+
+    if not pathlib.Path(test_file).exists():
+        raise RuntimeError(f"There is no {test_file} in this directory.")
+
+    with tempfile.TemporaryDirectory() as temp:
+        shutil.copy2(test_file, temp)
+        print("Fetching the checker.")
+        subprocess.run(f'wget -O {checker} {url}', shell=True, cwd=temp)
+        subprocess.run(f'chmod u+x ./{checker}', shell=True, cwd=temp)
+
+        print("Running tests...")
+        proc = subprocess.run(f'./{checker} {test_file}', 
+                            shell=True, stdout=subprocess.PIPE, 
+                            stderr=subprocess.PIPE, encoding='utf-8', 
+                            cwd=temp)
+        print('Done.')
+        display(HTML("<pre>" + proc.stderr + proc.stdout + "</pre>"))
+
+
+def test_file(file, testdir, pattern):
+    """Load tests from testdir matching pattern and run them agains file
+    
+    Returns: 
+        result - testlib.DetailedTestResult 
+        stream - STDIO from the test run. 
+    """
+    suite = unittest.defaultTestLoader.discover(testdir, pattern=pattern)
+    for test in flatten(suite):
+        test.test_file = file
+    stream = io.StringIO()
+    runner = unittest.TextTestRunner(stream=stream, buffer=True, verbosity=0, resultclass=DetailedTestResult)
+    result = runner.run(suite)
+    return result, stream
+
+
+def safe_load_module(file, docregex=None):
+    try:
+        save_stdin = sys.stdin
+        save_stdout = sys.stdout
+        save_stderr = sys.stderr
+        save_open = builtins.open
+        sys.stdin = None
+        sys.stdout = None
+        sys.stderr = None
+        builtins.open = None
+        mod_spec = importlib.util.spec_from_file_location(str(uuid.uuid4()), str(file))
+        mod = importlib.util.module_from_spec(mod_spec)
+        mod_spec.loader.exec_module(mod)
+
+    finally:
+        sys.stdin = save_stdin
+        sys.stdout = save_stdout 
+        sys.stderr = save_stderr
+        builtins.open = save_open
+
+    return mod 
+
+
+def flatten(tests):
+    """Flatten tests so I can use them as a list."""
+    for test in tests:
+        if isinstance(test, unittest.suite.TestSuite):
+            yield from flatten(test)
+        else:              
+            yield test
+
+
+def check(func, message="Failed!"):
+    class _wrapper(unittest.TestCase):
+        def test(self):
+            if not func():
+                self.fail(message)
+    display(HTML(run(_wrapper, template="compact.html")))
+
+
+_dict_words = None
+def words():
+    """Get a list of dictionary words on the system."""
+    global _dict_words
+    if _dict_words is None:
+        with open('/usr/share/dict/words') as f:
+            _dict_words = list(f) 
+    return _dict_words
+
 
 class DetailedTestResult(unittest.TestResult):
     """
@@ -86,7 +207,7 @@ class DetailedTestResult(unittest.TestResult):
         self.skipped_cnt += 1 
 
     def addSuccess(self, test):
-        self.results.append(DetailedTestResult._Result("OK", 'success', test, self))
+        self.results.append(DetailedTestResult._Result("PASS", 'success', test, self))
         self.run_cnt += 1 
         self.passed_cnt += 1 
 
@@ -97,97 +218,6 @@ class DetailedTestResult(unittest.TestResult):
 
     def __repr__(self):
         return f"""{self.__class__.__name__} run={self.run_cnt} passed={self.passed_cnt} failed={self.failed_cnt} skipped={self.skipped_cnt}"""
-
-def run(testname=None, template="template.html"):
-    """Run unit tests in a Jupyter notebook. The test results are rendered as simple HTML"""
-
-    with open(Path(__file__).parent / "templates" / template) as t:
-        template = Template(t.read())
-
-    runner = unittest.TextTestRunner(stream=io.StringIO(), verbosity=0, buffer=True, resultclass=DetailedTestResult)
-
-    if testname is None:
-        program = unittest.main(argv=['ignored'], verbosity=0, exit=False, testRunner=runner)
-        result = program.result
-    else:
-        tests = unittest.defaultTestLoader.loadTestsFromTestCase(testname)
-        result = runner.run(tests)
-
-    def format_trace(t):
-        args = []
-        for a in t[1][0]:
-            args.append(repr(a))
-        for k, v in t[1][1].items():
-            args.append(f"{k}={repr(v)}")
-        
-        return f"""{repr(t[2])} &crarr; {t[0]}({", ".join(args)})"""
-
-    return template.render(
-        result=result,
-        format_trace=format_trace,
-    )
-
-def test_file(file, testdir, pattern):
-    """Load tests from testdir matching pattern and run them agains file
-    
-    Returns: 
-        result - testlib.DetailedTestResult 
-        stream - STDIO from the test run. 
-    """
-    suite = unittest.defaultTestLoader.discover(testdir, pattern=pattern)
-    for test in flatten(suite):
-        test.test_file = file
-    stream = io.StringIO()
-    runner = unittest.TextTestRunner(stream=stream, buffer=True, verbosity=0, resultclass=DetailedTestResult)
-    result = runner.run(suite)
-    return result, stream
-
-def safe_load_module(file, docregex=None):
-
-    try:
-        save_stdin = sys.stdin
-        save_stdout = sys.stdout
-        save_stderr = sys.stderr
-        save_open = builtins.open
-        sys.stdin = None
-        sys.stdout = None
-        sys.stderr = None
-        builtins.open = None
-        mod_spec = importlib.util.spec_from_file_location(str(uuid.uuid4()), str(file))
-        mod = importlib.util.module_from_spec(mod_spec)
-        mod_spec.loader.exec_module(mod)
-
-    finally:
-        sys.stdin = save_stdin
-        sys.stdout = save_stdout 
-        sys.stderr = save_stderr
-        builtins.open = save_open
-
-    return mod 
-
-def flatten(tests):
-    """Flatten tests so I can use them as a list."""
-    for test in tests:
-        if isinstance(test, unittest.suite.TestSuite):
-            yield from flatten(test)
-        else:              
-            yield test
-            
-def check(func, message="Failed!"):
-    class _wrapper(unittest.TestCase):
-        def test(self):
-            if not func():
-                self.fail(message)
-    display(HTML(run(_wrapper, template="compact.html")))
-
-_dict_words = None
-def words():
-    """Get a list of dictionary words on the system."""
-    global _dict_words
-    if _dict_words is None:
-        with open('/usr/share/dict/words') as f:
-            _dict_words = list(f) 
-    return _dict_words
 
 
 class TestCase(unittest.TestCase):
