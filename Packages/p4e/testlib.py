@@ -11,7 +11,6 @@ import sys
 import uuid
 import unittest
 import importlib.util
-import pexpect
 import tempfile
 import builtins
 import traceback
@@ -22,6 +21,7 @@ import requests_unixsocket
 import shutil 
 import pathlib 
 import subprocess
+import inspect 
 
 from contextlib import contextmanager
 from pathlib import Path
@@ -164,6 +164,7 @@ class DetailedTestResult(unittest.TestResult):
             self.stdout = sys.stdout.getvalue()
             self.stderr = sys.stderr.getvalue()
             self.message = message
+            self.source = test.source_code
             if hasattr(test, 'trace'):
                 self.trace = list(test.trace)
             else:
@@ -238,6 +239,7 @@ class TestCase(unittest.TestCase):
         self.inputs = []
         self.save_open = None 
         self.save_input = None 
+        self.source_code = None
 
         class SandboxHelper:
             """A proxy object that makes it easy to access sandboxed functions."""
@@ -273,6 +275,13 @@ class TestCase(unittest.TestCase):
             self._ensure_load_module()
             if not hasattr(self.module, self.test_hasattr):
                 raise unittest.SkipTest(f"""Attribute {self.test_hasattr} not found in {self.module.__name__}.""")
+            dut = getattr(self.module, self.test_hasattr)
+            if isinstance(dut, Flask):
+                ## FIXME: This doesn't work for self-test. 
+                self.source_code = inspect.getsource(self.module)
+            else:
+                self.source_code = inspect.getsource(dut)
+
 
         # Create a scratch area and make it the working directory.
         self.tempdir = tempfile.TemporaryDirectory()
