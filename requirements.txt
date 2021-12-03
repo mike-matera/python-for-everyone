@@ -4,4 +4,5 @@ ipycanvas
 requests
 ipython-sql
 folium  
+face_recognition
 -e Packages
