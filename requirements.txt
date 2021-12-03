@@ -3,5 +3,5 @@ jupyterlab-git
 ipycanvas
 requests
 ipython-sql
-folium
+folium  
 -e Packages

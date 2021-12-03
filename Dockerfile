@@ -5,6 +5,7 @@
 FROM docker.io/jupyter/scipy-notebook:lab-3.0.16
 USER root
 RUN apt update -y && apt install -y openssh-client wamerican tree && apt clean -y
+RUN conda install --quiet --yes face_recognition
 USER $NB_UID
 COPY --chown=jovyan:users . ${HOME}
 RUN pip install -r requirements.txt
