@@ -12,7 +12,7 @@ import PIL
 import face_recognition
 
 from collections import namedtuple
-from ipycanvas import MultiCanvas, hold_canvas
+from ipycanvas import Canvas, MultiCanvas, hold_canvas
 from ipywidgets import Image
 
 from IPython.display import display
@@ -34,7 +34,9 @@ class Turtle:
         """Create a Turtle drawing canvas."""
         self._image = None
         self._size = size
-        self._turtle = Image.from_file(pathlib.Path(__file__).parent / "turtle.png")
+        turtle = numpy.array(PIL.Image.open(pathlib.Path(__file__).parent / "turtle.png"))
+        self._turtle = Canvas(width=turtle.shape[0], height=turtle.shape[1])
+        self._turtle.put_image_data(turtle)
         self._canvas = MultiCanvas(n_canvases=3, width=self._size.x, height=self._size.y) 
         self.clear()
         
@@ -49,14 +51,15 @@ class Turtle:
         
     def _draw_turtle(self):
         """Update the position of the turtle."""
-        with hold_canvas(self._canvas[2]):
-            self._canvas[2].clear()
-            self._canvas[2].reset_transform()
-            if self._show:
-                self._canvas[2].translate(self._current.x, self._current.y)
-                self._canvas[2].rotate(self._cur_heading - (3 * math.pi) / 2)
-                self._canvas[2].draw_image(self._turtle, x=-15, y=-15, \
-                    width=30, height=30)
+        self._canvas[2].clear()
+        if self._show:
+            self._canvas[2].save()
+            self._canvas[2].translate(self._current.x, self._current.y)
+            self._canvas[2].rotate(self._cur_heading + math.pi / 2)
+            self._canvas[2].draw_image(self._turtle, 
+                x=-15, y=-15, 
+                width=30, height=30)
+            self._canvas[2].restore()
 
     def draw(self, distance):
         """Move the pen by distance."""
@@ -139,7 +142,6 @@ class Turtle:
     def find_faces(self):
         faces = face_recognition.face_locations(self._image, model='hog')
         features = face_recognition.face_landmarks(self._image, face_locations=faces)
-
         rval = []        
         for i in range(len(faces)):
             face = {}
@@ -170,7 +172,6 @@ class Turtle:
             self._canvas[1].stroke_style = line_color
         if fill_color is not None:
             self._canvas[1].fill_style = fill_color
-        # Transform the canvas so the writing rotates. 
         self._canvas[1].translate(self._current.x, self._current.y)
         self._canvas[1].rotate(self._cur_heading + math.pi/2)
         self._canvas[1].font = font
