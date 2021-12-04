@@ -17,27 +17,37 @@ from ipywidgets import Image
 
 from IPython.display import display
 
+from typing import Dict, Iterable, List, Sequence, Tuple, Union
+
+from traitlets.traitlets import Int
 
 class Turtle:
 
     DimPoint = namedtuple('DimPoint', ['x', 'y'])
 
-    def _to_native(self, point):
-        """Convert Turtle coordinates to native ones."""
-        return Turtle.DimPoint(x=self._size.x//2 + point[0], y=self._size.y//2 - point[1])
+    def __init__(self, image: str=None, size=DimPoint(x=600,y=300)):
+        """Create a Turtle drawing canvas.
+        
+        Arguments:
 
-    def _to_turtle(self, point):
-        """Convert Turtle coordinates to native ones."""
-        return (point[0] - self._size.x//2, self._size.y//2 - point[1])
+            image: Load the image into the canvas. 
+            size: Set the size of the canvas.
+        """
 
-    def __init__(self, size=DimPoint(x=600,y=300)):
-        """Create a Turtle drawing canvas."""
         self._image = None
         self._size = size
+        if image is not None:
+            self._image = numpy.array(PIL.Image.open(image))
+            self._size = Turtle.DimPoint(x=self._image.shape[1], y=self._image.shape[0])
+
         turtle = numpy.array(PIL.Image.open(pathlib.Path(__file__).parent / "turtle.png"))
         self._turtle = Canvas(width=turtle.shape[0], height=turtle.shape[1])
         self._turtle.put_image_data(turtle)
         self._canvas = MultiCanvas(n_canvases=3, width=self._size.x, height=self._size.y) 
+
+        if self._image is not None:
+            self._canvas[0].put_image_data(self._image)
+
         self.clear()
         
     def clear(self):
@@ -49,19 +59,7 @@ class Turtle:
         self._show = True       
         self._draw_turtle()
         
-    def _draw_turtle(self):
-        """Update the position of the turtle."""
-        self._canvas[2].clear()
-        if self._show:
-            self._canvas[2].save()
-            self._canvas[2].translate(self._current.x, self._current.y)
-            self._canvas[2].rotate(self._cur_heading + math.pi / 2)
-            self._canvas[2].draw_image(self._turtle, 
-                x=-15, y=-15, 
-                width=30, height=30)
-            self._canvas[2].restore()
-
-    def draw(self, distance):
+    def draw(self, distance: float):
         """Move the pen by distance."""
         start = self._current
         self._current = Turtle.DimPoint(x = self._current.x + math.cos(self._cur_heading) * distance,
@@ -73,12 +71,12 @@ class Turtle:
             self._canvas[1].stroke()
         self._draw_turtle()
 
-    def turn(self, degrees):
-        """Turn the pen by degrees"""
+    def turn(self, degrees: float):
+        """Turn the pen by degrees."""
         self._cur_heading = (self._cur_heading - math.radians(degrees)) % (math.pi * 2)
         self._draw_turtle()
 
-    def goto(self, *place):
+    def goto(self, *place: Union[Tuple[Int,Int], Sequence[Int], DimPoint]):
         """Goto a point in the coordinate space."""
         if len(place) == 0:
             raise ValueError("Goto where?")
@@ -98,8 +96,8 @@ class Turtle:
             self._canvas[1].stroke()
         self._draw_turtle()
 
-    def heading(self, heading):
-        """Set the pen to face heading."""
+    def heading(self, heading: float):
+        """Set the pen to face heading in degrees."""
         self._cur_heading = -math.radians(heading)
         self._draw_turtle()
 
@@ -111,12 +109,12 @@ class Turtle:
         """Put the pen down. Movements will make lines."""
         self._pendown = True
 
-    def color(self, color):
-        """Set the pen color."""
+    def color(self, color: str):
+        """Set the pen color using HTML color notation."""
         self._canvas[1].stroke_style = color
         self._canvas[1].fill_style = color
 
-    def width(self, width):
+    def width(self, width: int):
         """Set the line thickness."""
         self._canvas[1].line_width = width 
 
@@ -130,7 +128,7 @@ class Turtle:
         self._show = False 
         self._draw_turtle()
 
-    def background(self, filename):
+    def background(self, filename: str):
         """Set the background image"""
         self._image = numpy.array(PIL.Image.open(filename))
         self._size = Turtle.DimPoint(x=self._image.shape[1], y=self._image.shape[0])
@@ -139,7 +137,27 @@ class Turtle:
         self._canvas[0].put_image_data(self._image)
         self.clear()
     
-    def find_faces(self):
+    def find_faces(self) -> List[Dict[str, Union[Tuple[Int, Int], Sequence[Tuple[Int, Int]]]]]:
+        """
+        Find the faces in the background image. Returns list of dictionaries, one for each 
+        face that's found. Face dictionaries have landmark names as keys and points as 
+        values. 
+
+        The face dictionary has two types of values. Single-point values and path values. 
+        The single point values are: 
+
+            "top_right", "top_left", "bottom_right", "bottom_left" 
+
+        The points in these keys are the box where the face was found. The other values 
+        are paths that form the contour of a facial feature. They are: 
+
+            "bottom_lip", "top_lip", "left_eye", "right_eye", "left_eyebrow", "right_eyebrow", 
+            "nose_tip", "nose_bridge", "chin" 
+        
+        Returns:
+
+            A list of face dictionaries. 
+        """
         faces = face_recognition.face_locations(self._image, model='hog')
         features = face_recognition.face_landmarks(self._image, face_locations=faces)
         rval = []        
@@ -156,16 +174,31 @@ class Turtle:
             rval.append(face)
         return rval
 
-    def polygon(self, points):
-        """Draw a filled polygon."""
+    def polygon(self, points: Sequence[Tuple[Int, Int]]):
+        """Draw a filled polygon.
+        
+        Arguments:
+
+            points: A list of 2D tuples of (x,y)
+
+        """
         self._canvas[1].begin_path()
         self._canvas[1].move_to(*self._to_native(points[0]))
         for point in points[1:]:
             self._canvas[1].line_to(*self._to_native(point))
         self._canvas[1].fill()
 
-    def write(self, text, font="24px sans-serif", text_align="center", line_color=None, fill_color=None):
-        """Write text"""
+    def write(self, text: str, font: str="24px sans-serif", text_align: str="center", line_color: str=None, fill_color: str=None):
+        """Write text.
+        
+        Arguments:
+
+            text: The text to write 
+            font: The HTML font specification 
+            text_align: The alignment of the text relative to the turtle 
+            line_color: The color of the outline of the text (defaults to the pen color)
+            fill_color: The color of the fill of the text (defaults to the pen color)
+        """
         old_stroke = self._canvas[1].stroke_style
         old_fill = self._canvas[1].fill_style
         if line_color is not None:
@@ -181,6 +214,26 @@ class Turtle:
         self._canvas[1].reset_transform()
         self._canvas[1].stroke_style = old_stroke
         self._canvas[1].fill_style = old_fill
+
+    def _draw_turtle(self):
+        """Update the position of the turtle."""
+        self._canvas[2].clear()
+        if self._show:
+            self._canvas[2].save()
+            self._canvas[2].translate(self._current.x, self._current.y)
+            self._canvas[2].rotate(self._cur_heading + math.pi / 2)
+            self._canvas[2].draw_image(self._turtle, 
+                x=-15, y=-15, 
+                width=30, height=30)
+            self._canvas[2].restore()
+
+    def _to_native(self, point: Tuple[Int, Int]) -> DimPoint:
+        """Convert Turtle coordinates to native ones."""
+        return Turtle.DimPoint(x=self._size.x//2 + point[0], y=self._size.y//2 - point[1])
+
+    def _to_turtle(self, point: DimPoint) -> Tuple[Int, Int]:
+        """Convert Turtle coordinates to native ones."""
+        return (point[0] - self._size.x//2, self._size.y//2 - point[1])
 
     def _ipython_display_(self):
         display(self._canvas)
