@@ -25,7 +25,7 @@ class Turtle:
 
     DimPoint = namedtuple('DimPoint', ['x', 'y'])
 
-    def __init__(self, image: str=None, size=DimPoint(x=600,y=300)):
+    def __init__(self, image: str=None, size=(600, 300)):
         """Create a Turtle drawing canvas.
         
         Arguments:
@@ -35,7 +35,7 @@ class Turtle:
         """
 
         self._image = None
-        self._size = size
+        self._size = Turtle.DimPoint(size[0], size[1])
         if image is not None:
             self._image = numpy.array(PIL.Image.open(image))
             self._size = Turtle.DimPoint(x=self._image.shape[1], y=self._image.shape[0])
