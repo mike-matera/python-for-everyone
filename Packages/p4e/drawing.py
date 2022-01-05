@@ -9,6 +9,7 @@ import pathlib
 import ipycanvas
 import numpy 
 import PIL 
+import contextlib
 
 import face_recognition
 
@@ -38,38 +39,41 @@ class Turtle:
         self._turtle = Canvas(width=turtle.shape[0], height=turtle.shape[1])
         self._turtle.put_image_data(turtle)
         self._canvas = MultiCanvas(n_canvases=3, width=self._size.x, height=self._size.y, **kwargs) 
+        self._reset()
 
         if image is not None:
-            # calls clear()
             self.background(image)          
-        else:
-            self.clear()
+
+        self.clear()
     
-    def clear(self):
-        """Clear the canvas and start over."""
-        self._canvas[1].clear()
+    def _reset(self):
         self._current = self._to_native(Turtle.DimPoint(0,0))
         self._cur_heading = (3 * math.pi) / 2 # in Canvas Y is negative.
         self._pendown = True 
-        self._show = True       
-        self._draw_turtle()
+        self._show = True
+
+    def clear(self):
+        """Clear the canvas and start over."""
+        with self._do_draw():
+            self._canvas[1].clear()
+            self._reset()
         
     def draw(self, distance: float):
         """Move the pen by distance."""
-        start = self._current
-        self._current = Turtle.DimPoint(x = self._current.x + math.cos(self._cur_heading) * distance,
-                        y = self._current.y + math.sin(self._cur_heading) * distance)                        
-        if self._pendown:
-            self._canvas[1].begin_path()
-            self._canvas[1].move_to(*start)
-            self._canvas[1].line_to(*self._current)
-            self._canvas[1].stroke()
-        self._draw_turtle()
+        with self._do_draw():
+            start = self._current
+            self._current = Turtle.DimPoint(x = self._current.x + math.cos(self._cur_heading) * distance,
+                            y = self._current.y + math.sin(self._cur_heading) * distance)                        
+            if self._pendown:
+                self._canvas[1].begin_path()
+                self._canvas[1].move_to(*start)
+                self._canvas[1].line_to(*self._current)
+                self._canvas[1].stroke()
 
     def turn(self, degrees: float):
         """Turn the pen by degrees."""
-        self._cur_heading = (self._cur_heading - math.radians(degrees)) % (math.pi * 2)
-        self._draw_turtle()
+        with self._do_draw():
+            self._cur_heading = (self._cur_heading - math.radians(degrees)) % (math.pi * 2)
 
     def goto(self, *place: Union[Tuple[int,int], Sequence[int], DimPoint]):
         """Goto a point in the coordinate space."""
@@ -82,19 +86,19 @@ class Turtle:
         else:
             p = Turtle.DimPoint._make(place)
 
-        start = self._current
-        self._current = self._to_native(p)
-        if self._pendown:
-            self._canvas[1].begin_path()
-            self._canvas[1].move_to(*start)
-            self._canvas[1].line_to(*self._current)
-            self._canvas[1].stroke()
-        self._draw_turtle()
+        with self._do_draw():
+            start = self._current
+            self._current = self._to_native(p)
+            if self._pendown:
+                self._canvas[1].begin_path()
+                self._canvas[1].move_to(*start)
+                self._canvas[1].line_to(*self._current)
+                self._canvas[1].stroke()
 
     def heading(self, heading: float):
         """Set the pen to face heading in degrees."""
-        self._cur_heading = -math.radians(heading)
-        self._draw_turtle()
+        with self._do_draw():
+            self._cur_heading = -math.radians(heading)
 
     def up(self):
         """Pick the pen up. Movements won't make lines."""
@@ -115,20 +119,20 @@ class Turtle:
 
     def show(self):
         """Show the turtle in the scene.""" 
-        self._show = True 
-        self._draw_turtle()
-
+        with self._do_draw():
+            self._show = True 
+    
     def hide(self):
         """Hide the turtle in the scene.""" 
-        self._show = False 
-        self._draw_turtle()
-
+        with self._do_draw():
+            self._show = False 
+    
     def background(self, filename: str):
         """Set the background image"""
+        self._reset()
         self._image = numpy.array(PIL.Image.open(filename))
         self.size = (self._image.shape[1], self._image.shape[0])
         self._canvas[0].put_image_data(self._image)
-        self.clear()
     
     def find_faces(self) -> List[Dict[str, Union[Tuple[int, int], Sequence[Tuple[int, int]]]]]:
         """
@@ -175,11 +179,12 @@ class Turtle:
             points: A list of 2D tuples of (x,y)
 
         """
-        self._canvas[1].begin_path()
-        self._canvas[1].move_to(*self._to_native(points[0]))
-        for point in points[1:]:
-            self._canvas[1].line_to(*self._to_native(point))
-        self._canvas[1].fill()
+        with self._do_draw():
+            self._canvas[1].begin_path()
+            self._canvas[1].move_to(*self._to_native(points[0]))
+            for point in points[1:]:
+                self._canvas[1].line_to(*self._to_native(point))
+            self._canvas[1].fill()
 
     def write(self, text: str, font: str="24px sans-serif", text_align: str="center", line_color: str=None, fill_color: str=None):
         """Write text.
@@ -192,25 +197,28 @@ class Turtle:
             line_color: The color of the outline of the text (defaults to the pen color)
             fill_color: The color of the fill of the text (defaults to the pen color)
         """
-        old_stroke = self._canvas[1].stroke_style
-        old_fill = self._canvas[1].fill_style
-        if line_color is not None:
-            self._canvas[1].stroke_style = line_color
-        if fill_color is not None:
-            self._canvas[1].fill_style = fill_color
-        self._canvas[1].translate(self._current.x, self._current.y)
-        self._canvas[1].rotate(self._cur_heading + math.pi/2)
-        self._canvas[1].font = font
-        self._canvas[1].text_align = text_align
-        self._canvas[1].fill_text(text, 0, 0)
-        self._canvas[1].stroke_text(text, 0, 0)
-        self._canvas[1].reset_transform()
-        self._canvas[1].stroke_style = old_stroke
-        self._canvas[1].fill_style = old_fill
+        with self._do_draw():
+            old_stroke = self._canvas[1].stroke_style
+            old_fill = self._canvas[1].fill_style
+            if line_color is not None:
+                self._canvas[1].stroke_style = line_color
+            if fill_color is not None:
+                self._canvas[1].fill_style = fill_color
+            self._canvas[1].translate(self._current.x, self._current.y)
+            self._canvas[1].rotate(self._cur_heading + math.pi/2)
+            self._canvas[1].font = font
+            self._canvas[1].text_align = text_align
+            self._canvas[1].fill_text(text, 0, 0)
+            self._canvas[1].stroke_text(text, 0, 0)
+            self._canvas[1].reset_transform()
+            self._canvas[1].stroke_style = old_stroke
+            self._canvas[1].fill_style = old_fill
 
-    def _draw_turtle(self):
-        """Update the position of the turtle."""
+    @contextlib.contextmanager
+    def _do_draw(self):
+        """Context manager that combines all drawing operations and re-renders the turtle."""
         with hold_canvas(self._canvas):
+            yield 
             self._canvas[2].clear()
             if self._show:
                 self._canvas[2].save()
@@ -241,7 +249,7 @@ class Turtle:
     def size(self, newsize: Tuple[int,int]):
         """Resize the canvas element and adjust they layout size."""
         self._size = Turtle.DimPoint(x=newsize[0], y=newsize[1])
-        with hold_canvas(self._canvas):
+        with self._do_draw():
             self._canvas.width = self._size.x
             self._canvas.height = self._size.y
             if self._size.x >= 800:
