@@ -25,7 +25,7 @@ class Turtle:
 
     DimPoint = namedtuple('DimPoint', ['x', 'y'])
 
-    def __init__(self, image: str=None, size=(600, 300)):
+    def __init__(self, image: str=None, size=(600, 300), **kwargs):
         """Create a Turtle drawing canvas.
         
         Arguments:
@@ -43,7 +43,7 @@ class Turtle:
         turtle = numpy.array(PIL.Image.open(pathlib.Path(__file__).parent / "turtle.png"))
         self._turtle = Canvas(width=turtle.shape[0], height=turtle.shape[1])
         self._turtle.put_image_data(turtle)
-        self._canvas = MultiCanvas(n_canvases=3, width=self._size.x, height=self._size.y) 
+        self._canvas = MultiCanvas(n_canvases=3, width=self._size.x, height=self._size.y, **kwargs) 
 
         if self._image is not None:
             self._canvas[0].put_image_data(self._image)
@@ -237,3 +237,9 @@ class Turtle:
 
     def _ipython_display_(self):
         display(self._canvas)
+
+    @property
+    def size(self):
+        """The size as a tuple."""
+        return (self._size.x, self._size.y)
+

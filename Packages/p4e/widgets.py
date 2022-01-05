@@ -11,15 +11,16 @@ from typing import Dict, Iterable
 
 from IPython.core.display import display 
 
-def layout(*rows: Iterable[ipywidgets.Widget]) -> ipywidgets.Widget:
-    """
-    Create a simple grid layout. 
-    """
-    display(ipywidgets.VBox(tuple(map(ipywidgets.HBox, rows))))
 
 def bind(fname: str, widgets: Dict[str, ipywidgets.Widget]) -> ipywidgets.Output:
     """
-    Bind controls to a function. 
+    Bind controls to a function. The function is given by name and is searched for in the __main__ 
+    package. Returns a Widget that displays the output of the wrapped function. The return 
+    value of the wrapped function is given to `display()` and shown in the output widget.
+
+    The purpose of this function is to make it possible to wrap a student function before 
+    the function is defined in the notebook. If the function doesn't exist an error message
+    is shown. The function output can be nestled with input widgets at the top of a notebook.
     """
     def wrapper(**kwargs):
         main = sys.modules['__main__']
