@@ -6,6 +6,7 @@ Author: Mike Matera
 
 import math 
 import pathlib
+import ipycanvas
 import numpy 
 import PIL 
 
@@ -19,7 +20,6 @@ from IPython.display import display
 
 from typing import Dict, Iterable, List, Sequence, Tuple, Union
 
-from traitlets.traitlets import Int
 
 class Turtle:
 
@@ -33,23 +33,18 @@ class Turtle:
             image: Load the image into the canvas. 
             size: Set the size of the canvas.
         """
-
-        self._image = None
         self._size = Turtle.DimPoint(size[0], size[1])
-        if image is not None:
-            self._image = numpy.array(PIL.Image.open(image))
-            self._size = Turtle.DimPoint(x=self._image.shape[1], y=self._image.shape[0])
-
         turtle = numpy.array(PIL.Image.open(pathlib.Path(__file__).parent / "turtle.png"))
         self._turtle = Canvas(width=turtle.shape[0], height=turtle.shape[1])
         self._turtle.put_image_data(turtle)
         self._canvas = MultiCanvas(n_canvases=3, width=self._size.x, height=self._size.y, **kwargs) 
 
-        if self._image is not None:
-            self._canvas[0].put_image_data(self._image)
-
-        self.clear()
-        
+        if image is not None:
+            # calls clear()
+            self.background(image)          
+        else:
+            self.clear()
+    
     def clear(self):
         """Clear the canvas and start over."""
         self._canvas[1].clear()
@@ -76,7 +71,7 @@ class Turtle:
         self._cur_heading = (self._cur_heading - math.radians(degrees)) % (math.pi * 2)
         self._draw_turtle()
 
-    def goto(self, *place: Union[Tuple[Int,Int], Sequence[Int], DimPoint]):
+    def goto(self, *place: Union[Tuple[int,int], Sequence[int], DimPoint]):
         """Goto a point in the coordinate space."""
         if len(place) == 0:
             raise ValueError("Goto where?")
@@ -131,13 +126,11 @@ class Turtle:
     def background(self, filename: str):
         """Set the background image"""
         self._image = numpy.array(PIL.Image.open(filename))
-        self._size = Turtle.DimPoint(x=self._image.shape[1], y=self._image.shape[0])
-        self._canvas.width = self._size[0]
-        self._canvas.height = self._size[1]
+        self.size = (self._image.shape[1], self._image.shape[0])
         self._canvas[0].put_image_data(self._image)
         self.clear()
     
-    def find_faces(self) -> List[Dict[str, Union[Tuple[Int, Int], Sequence[Tuple[Int, Int]]]]]:
+    def find_faces(self) -> List[Dict[str, Union[Tuple[int, int], Sequence[Tuple[int, int]]]]]:
         """
         Find the faces in the background image. Returns list of dictionaries, one for each 
         face that's found. Face dictionaries have landmark names as keys and points as 
@@ -174,7 +167,7 @@ class Turtle:
             rval.append(face)
         return rval
 
-    def polygon(self, points: Sequence[Tuple[Int, Int]]):
+    def polygon(self, points: Sequence[Tuple[int, int]]):
         """Draw a filled polygon.
         
         Arguments:
@@ -217,29 +210,45 @@ class Turtle:
 
     def _draw_turtle(self):
         """Update the position of the turtle."""
-        self._canvas[2].clear()
-        if self._show:
-            self._canvas[2].save()
-            self._canvas[2].translate(self._current.x, self._current.y)
-            self._canvas[2].rotate(self._cur_heading + math.pi / 2)
-            self._canvas[2].draw_image(self._turtle, 
-                x=-15, y=-15, 
-                width=30, height=30)
-            self._canvas[2].restore()
+        with hold_canvas(self._canvas):
+            self._canvas[2].clear()
+            if self._show:
+                self._canvas[2].save()
+                self._canvas[2].translate(self._current.x, self._current.y)
+                self._canvas[2].rotate(self._cur_heading + math.pi / 2)
+                self._canvas[2].draw_image(self._turtle, 
+                    x=-15, y=-15, 
+                    width=30, height=30)
+                self._canvas[2].restore()
 
-    def _to_native(self, point: Tuple[Int, Int]) -> DimPoint:
+    def _to_native(self, point: Tuple[int, int]) -> DimPoint:
         """Convert Turtle coordinates to native ones."""
         return Turtle.DimPoint(x=self._size.x//2 + point[0], y=self._size.y//2 - point[1])
 
-    def _to_turtle(self, point: DimPoint) -> Tuple[Int, Int]:
+    def _to_turtle(self, point: DimPoint) -> Tuple[int, int]:
         """Convert Turtle coordinates to native ones."""
         return (point[0] - self._size.x//2, self._size.y//2 - point[1])
-
+        
     def _ipython_display_(self):
         display(self._canvas)
 
     @property
-    def size(self):
-        """The size as a tuple."""
+    def size(self) -> Tuple[int,int]:
+        """Get the size of the canvas' color buffer (not layout size)."""
         return (self._size.x, self._size.y)
 
+    @size.setter
+    def size(self, newsize: Tuple[int,int]):
+        """Resize the canvas element and adjust they layout size."""
+        self._size = Turtle.DimPoint(x=newsize[0], y=newsize[1])
+        with hold_canvas(self._canvas):
+            self._canvas.width = self._size.x
+            self._canvas.height = self._size.y
+            if self._size.x >= 800:
+                self._canvas.layout.width = "90%"
+                self._canvas.layout.max_width = f"{self._size.x}px"
+                self._canvas.layout.min_width = "800px"
+            else:
+                self._canvas.layout.width = "auto"
+                self._canvas.layout.max_width = "auto"
+                self._canvas.layout.min_width = "auto"
