@@ -280,8 +280,11 @@ class TestCase(unittest.TestCase):
                 ## FIXME: This doesn't work for self-test. 
                 self.source_code = inspect.getsource(self.module)
             else:
-                self.source_code = inspect.getsource(dut)
-
+                try:
+                    self.source_code = inspect.getsource(dut)
+                except Exception as e:
+                    ## FIXME: This happens when testing classes.
+                    self.source_code = ""
 
         # Create a scratch area and make it the working directory.
         self.tempdir = tempfile.TemporaryDirectory()
