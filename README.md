@@ -1,6 +1,6 @@
 # Python for Everyone
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mike-matera/python-for-everyone/release-sp22?urlpath=lab)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mike-matera/python-for-everyone/release-sp23.1?urlpath=lab)
 
 Learn Python with help and practice. These [Jupyter](https://jupyter.org/) notebooks support my [CIS-15](https://www.lifealgorithmic.com/cis-15/index.html) class at [Cabrillo College](https://www.cabrillo.edu/). The notebooks teach the principles of programming with activities that give you practice and projects to challenge you.
 
