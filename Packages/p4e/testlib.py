@@ -296,7 +296,8 @@ class TestCase(unittest.TestCase):
         os.chdir(self.save_wd)
         self.tempdir.cleanup()
 
-    def test_ast(self):
+    @unittest.skipUnless(os.environ.get('TESTER_NO_SYNTAX') is None, None)
+    def testzz_1_ast(self):
         """Testing solution syntax."""
 
         req = set()
@@ -311,8 +312,17 @@ class TestCase(unittest.TestCase):
             types = {x.__class__ for x in nodes}            
             for node in req - types:
                 self.fail(f"This answer requires Python syntax: {node}")
-            for node in banned.intersection(types):
+            for node in banned & types:
                 self.fail(f"You used forbidden Python syntax: {node}")
+
+    @unittest.skipIf(os.environ.get('TESTER_GPT') is None, None)
+    def testzz_2_gpt(self):
+        """Testing for generated solutions."""
+        nodes = list(ast.walk(ast.parse(self.source_code)))
+        args = [ node.arg for node in nodes if node.__class__ == ast.arg ]
+        for arg in args:
+            if arg.endswith('_') or arg.startswith('_') or '__' in arg:
+                self.fail(f"ChatGPT detected by malicious arg.")
 
     def _ensure_load_module(self):
         if self.module is not None:
@@ -324,44 +334,6 @@ class TestCase(unittest.TestCase):
         except:
             self.fail("Test failed because there is code outside of a function.")
         self.module = mod
-
-    @contextmanager
-    def spawn(self, *cmdline):
-        """Start a pexpect session and return the pexpect test. The program will be run in a temporary directory and the conversation will be echoed to sys.stdout.
-        
-        Arguments: 
-            cmdline (str): A list of command line values to send to the program. 
-
-        Returns: 
-            (pexpect.spawn): A pexpect test object (can be used as a context manager).
-        """ 
-        error = None
-        try:
-            class SpawnWrapper(pexpect.spawn):
-                def __init__(self, *args, **kwargs):
-                    self.what = None
-                    super().__init__(*args, **kwargs)
-                
-                def expect(self, what, *args, **kwargs):
-                    self.what = what
-                    super().expect(what, *args, **kwargs)
-
-                def expect_exact(self, what, *args, **kwargs):
-                    self.what = what
-                    super().expect_exact(what, *args, **kwargs)
-
-            spawn = SpawnWrapper(f'{sys.executable}', [str(self.absfile)] + list(cmdline), 
-                    logfile=sys.stdout, timeout=2.0, echo=False, encoding='utf-8', 
-                    cwd=self.tempdir.name,
-                )
-            yield spawn 
-
-        except (pexpect.exceptions.EOF,  pexpect.exceptions.TIMEOUT) as e:
-            if isinstance(spawn.what, list):
-                choices = ', '.join(spawn.what)
-            else:
-                choices = spawn.what
-            self.fail(f"""I expected to see one of [{choices}] from your program.""")
 
 
     def sandbox(self, attr):
