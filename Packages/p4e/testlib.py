@@ -6,7 +6,7 @@ Author: Mike Matera
 
 import io
 import os 
-import re
+import ast
 import sys
 import uuid
 import unittest
@@ -295,6 +295,24 @@ class TestCase(unittest.TestCase):
         # Restore wd 
         os.chdir(self.save_wd)
         self.tempdir.cleanup()
+
+    def test_ast(self):
+        """Testing solution syntax."""
+
+        req = set()
+        banned = set()
+        if hasattr(self, 'tokens_required'):
+            req = set(self.tokens_required)
+        if hasattr(self, 'tokens_forbidden'):
+            banned = set(self.tokens_forbidden)
+
+        if len(req) > 0 or len(banned) > 0:
+            nodes = list(ast.walk(ast.parse(self.source_code)))
+            types = {x.__class__ for x in nodes}            
+            for node in req - types:
+                self.fail(f"This answer requires Python syntax: {node}")
+            for node in banned.intersection(types):
+                self.fail(f"You used forbidden Python syntax: {node}")
 
     def _ensure_load_module(self):
         if self.module is not None:
