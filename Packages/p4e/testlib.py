@@ -22,6 +22,7 @@ import shutil
 import pathlib 
 import subprocess
 import inspect 
+import pandas
 
 from contextlib import contextmanager
 from pathlib import Path
@@ -299,7 +300,6 @@ class TestCase(unittest.TestCase):
     @unittest.skipUnless(os.environ.get('TESTER_NO_SYNTAX') is None, None)
     def testzz_1_ast(self):
         """Testing solution syntax."""
-
         req = set()
         banned = set()
         if hasattr(self, 'tokens_required'):
@@ -311,9 +311,9 @@ class TestCase(unittest.TestCase):
             nodes = list(ast.walk(ast.parse(self.source_code)))
             types = {x.__class__ for x in nodes}            
             for node in req - types:
-                self.fail(f"This answer requires Python syntax: {node}")
+                self.fail(f"The function '{self.test_hasattr}' requires {node}.")
             for node in banned & types:
-                self.fail(f"You used forbidden Python syntax: {node}")
+                self.fail(f"You cannot use {node} in the '{self.test_hasattr}' function.")
 
     @unittest.skipIf(os.environ.get('TESTER_GPT') is None, None)
     def testzz_2_gpt(self):
@@ -511,6 +511,20 @@ class TestCase(unittest.TestCase):
         elif exp is None:
             if got is not None:
                 return f"""The value should be None"""
+
+        elif isinstance(exp, pandas.DataFrame):
+            try:
+                if len(exp.compare(got)) != 0:
+                    return f"""The DataFrame:\n{got}\n  doesn't match the expected Series:\n{exp}\n"""
+            except ValueError as e:
+                return f"""The DataFrame:\n{got}\n  doesn't match the expected Series:\n{exp}\n"""
+
+        elif isinstance(exp, pandas.Series):
+            try:
+                if len(exp.compare(got)) != 0:
+                    return f"""The Series:\n{got}\n  doesn't match the expected Series:\n{exp}\n"""
+            except ValueError as e:
+                return f"""The Series:\n{got}\n  doesn't match the expected Series:\n{exp}\n"""
 
         else:
             raise ValueError("The compare function doesn't work on this type:", exp.__class__.__name__)
