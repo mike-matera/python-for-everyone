@@ -2,7 +2,7 @@
 # Build a Jupyter Stack specific for my Python for Everyone class. 
 #
 
-FROM docker.io/jupyter/scipy-notebook:lab-3.5.3
+FROM docker.io/jupyter/scipy-notebook:lab-4.0.1
 USER root
 RUN apt update -y && apt install -y openssh-client wamerican tree && apt clean -y
 RUN conda install --quiet --yes face_recognition
