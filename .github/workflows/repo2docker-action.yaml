@@ -1,34 +1,40 @@
-name: Build and Push Image
-on: 
+name: Create and publish a Docker image
+
+on:
   push:
-    branches:
-      - "release-*"
+    branches: 
+      - 'main'
+    tags:
+      - 'release-*'
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  binder:
+  build-and-push-image:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Log in to the Container registry
-      uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-    - name: update jupyter dependencies with repo2docker
-      uses: jupyterhub/repo2docker-action@master
-      with:
-        DOCKER_USERNAME: ${{ github.actor }}
-        DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        DOCKER_REGISTRY: ${{ env.REGISTRY }}
-        PUBLIC_REGISTRY_CHECK: true
-        BINDER_CACHE: true
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
