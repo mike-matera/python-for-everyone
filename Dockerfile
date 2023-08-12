@@ -2,7 +2,7 @@
 # Build a Jupyter Stack specific for my Python for Everyone class. 
 #
 
-FROM docker.io/jupyter/scipy-notebook:lab-4.0.3
+FROM docker.io/jupyter/scipy-notebook:lab-4.0.4
 USER root
 RUN apt update -y && apt install -y openssh-client wamerican tree && apt clean -y
 USER $NB_UID
