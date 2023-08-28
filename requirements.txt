@@ -3,8 +3,6 @@ jupyterlab-git
 requests
 ipython-sql
 folium  
-# git+https://github.com/mike-matera/jupyter_turtle.git
-# git+https://github.com/mike-matera/nb_introspect.git
--e jupyter_turtle
--e nb_introspect
+git+https://github.com/mike-matera/jupyter_turtle.git
+git+https://github.com/mike-matera/nb_introspect.git
 -e Packages
