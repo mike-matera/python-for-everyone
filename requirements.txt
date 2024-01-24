@@ -4,5 +4,5 @@ requests
 ipython-sql
 folium  
 git+https://github.com/mike-matera/jupyter_turtle.git
-git+https://github.com/mike-matera/nb_introspect.git
+git+https://github.com/mike-matera/doctags.git
 -e Packages

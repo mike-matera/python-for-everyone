@@ -13,7 +13,7 @@ RUN pip install -r requirements.txt
 RUN ipython profile create default
 COPY <<EOF ${HOME}/.ipython/profile_default/ipython_config.py
 c = get_config()  # noqa: F821
-c.InteractiveShellApp.extensions.append('nb_introspect')
+c.InteractiveShellApp.extensions.append('doctags')
 EOF
 
 ENV JUPYTER_ENABLE_LAB yes
