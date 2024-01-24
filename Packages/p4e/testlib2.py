@@ -4,18 +4,38 @@ Helper functions for test cases. NEW
 Author: Mike Matera
 """
 
-import io
-import re
 import sys
-from typing import Callable
-import unittest
 import tempfile
 import traceback
+import subprocess 
 
-from contextlib import contextmanager
 from pathlib import Path
 from jinja2 import Template 
 from IPython.display import display, HTML 
+
+def run_exam(solution):
+    with tempfile.TemporaryDirectory() as temp:
+        sfile = Path(temp) / 'solution.py'
+        with open(sfile, 'w') as s:
+            s.write(solution)
+        
+        url = 'https://storage.googleapis.com/p4e-resoureces/checker'
+        checker = 'checker-binary'
+        subprocess.run(f'wget -O {checker} {url}', shell=True, stderr=subprocess.DEVNULL, cwd=temp)
+        subprocess.run(f'chmod u+x ./{checker}', shell=True, cwd=temp)
+
+        proc = subprocess.run(f'./{checker} {sfile}', 
+                            shell=True, stdout=subprocess.PIPE, 
+                            stderr=subprocess.PIPE, encoding='utf-8', 
+                            cwd=temp)
+        checker_feedback = f"""
+        <h3>Checker Output</h3>
+        <pre>{proc.stderr} {proc.stdout}</pre>
+        <h3>Graded Code:</h3>
+        <div style="margin-left:2em;"><pre>{solution}</pre></div>
+        """
+        return checker_feedback
+
 
 class HTMLTestResult:
     """A way to render tests nicely."""
