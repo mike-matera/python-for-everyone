@@ -30,6 +30,6 @@ RUN uv sync --locked
 # Cleanup 
 RUN rm -f uv.lock pyproject.toml
 
-ENV JUPYTER_ENABLE_LAB=yes \
+ENV PATH="/home/${NB_USER}/.venv/bin:$PATH" \
+    JUPYTER_ENABLE_LAB=yes \
     SHELL=/bin/bash
-
