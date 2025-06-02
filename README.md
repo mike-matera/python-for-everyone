@@ -1,6 +1,6 @@
 # Python for Everyone
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mike-matera/python-for-everyone/release-fall24?urlpath=lab)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mike-matera/python-for-everyone/main?urlpath=lab)
 
 Learn Python with help and practice. These [Jupyter](https://jupyter.org/)
 notebooks support my [CIS-15](https://www.lifealgorithmic.com/cis-15/index.html)
