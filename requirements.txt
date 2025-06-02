@@ -1,4 +1,0 @@
-nbgitpuller
-requests
-git+https://github.com/mike-matera/jupyter_turtle.git
-git+https://github.com/mike-matera/nbtest.git
