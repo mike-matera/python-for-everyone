@@ -8,6 +8,7 @@ dependencies = [
     "ipycanvas>=0.13.3",
     "jupyter-turtle",
     "jupyterlab>=4.4.3",
+    "matplotlib>=3.10.3",
     "nbquiz",
     "nbtest",
     "pandas>=2.2.3",
