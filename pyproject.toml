@@ -6,7 +6,15 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "ipycanvas>=0.13.3",
+    "jupyter-turtle",
     "jupyterlab>=4.4.3",
+    "nbquiz",
+    "nbtest",
     "pandas>=2.2.3",
     "requests>=2.32.3",
 ]
+
+[tool.uv.sources]
+jupyter-turtle = { path = "Modules/jupyter_turtle" }
+nbtest = { path = "Modules/nbtest" }
+nbquiz = { path = "Modules/nbquiz" }

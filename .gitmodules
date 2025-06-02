@@ -1,0 +1,9 @@
+[submodule "Modules/nbtest"]
+	path = Modules/nbtest
+	url = ../nbtest.git
+[submodule "Modules/nbquiz"]
+	path = Modules/nbquiz
+	url = ../nbquiz.git
+[submodule "Modules/jupyter_turtle"]
+	path = Modules/jupyter_turtle
+	url = ../jupyter_turtle.git
