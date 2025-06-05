@@ -17,6 +17,6 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-jupyter-turtle = { path = "Modules/jupyter_turtle" }
-nbtest = { path = "Modules/nbtest" }
-nbquiz = { path = "Modules/nbquiz" }
+jupyter-turtle = { path = "libs/jupyter_turtle" }
+nbtest = { path = "libs/nbtest" }
+nbquiz = { path = "libs/nbquiz" }

@@ -805,7 +805,7 @@ wheels = [
 [[package]]
 name = "jupyter-turtle"
 version = "1.0.0"
-source = { directory = "Modules/jupyter_turtle" }
+source = { directory = "libs/jupyter_turtle" }
 dependencies = [
     { name = "ipycanvas" },
     { name = "jupyterlab" },
@@ -1159,7 +1159,7 @@ wheels = [
 [[package]]
 name = "nbquiz"
 version = "0.3.0"
-source = { directory = "Modules/nbquiz" }
+source = { directory = "libs/nbquiz" }
 dependencies = [
     { name = "cssutils" },
     { name = "docutils" },
@@ -1170,6 +1170,7 @@ dependencies = [
     { name = "jupyterlab" },
     { name = "minify-html" },
     { name = "myst-parser" },
+    { name = "nbtest" },
     { name = "pyyaml" },
     { name = "requests" },
     { name = "yamale" },
@@ -1186,6 +1187,7 @@ requires-dist = [
     { name = "jupyterlab" },
     { name = "minify-html" },
     { name = "myst-parser" },
+    { name = "nbtest", directory = "libs/nbtest" },
     { name = "pyyaml" },
     { name = "requests" },
     { name = "yamale" },
@@ -1194,7 +1196,7 @@ requires-dist = [
 [[package]]
 name = "nbtest"
 version = "1.0.0"
-source = { directory = "Modules/nbtest" }
+source = { directory = "libs/nbtest" }
 dependencies = [
     { name = "ipywidgets" },
     { name = "jinja2" },
@@ -1541,11 +1543,11 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "ipycanvas", specifier = ">=0.13.3" },
-    { name = "jupyter-turtle", directory = "Modules/jupyter_turtle" },
+    { name = "jupyter-turtle", directory = "libs/jupyter_turtle" },
     { name = "jupyterlab", specifier = ">=4.4.3" },
     { name = "matplotlib", specifier = ">=3.10.3" },
-    { name = "nbquiz", directory = "Modules/nbquiz" },
-    { name = "nbtest", directory = "Modules/nbtest" },
+    { name = "nbquiz", directory = "libs/nbquiz" },
+    { name = "nbtest", directory = "libs/nbtest" },
     { name = "notebook", specifier = ">=7.4.3" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "requests", specifier = ">=2.32.3" },

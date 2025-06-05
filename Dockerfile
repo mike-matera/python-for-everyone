@@ -28,7 +28,7 @@ WORKDIR /home/${NB_USER}
 RUN uv sync --locked
 
 # Cleanup 
-RUN rm -f uv.lock pyproject.toml
+RUN rm -rf uv.lock pyproject.toml libs/
 
 ENV PATH="/home/${NB_USER}/.venv/bin:$PATH" \
     JUPYTER_ENABLE_LAB=yes \
