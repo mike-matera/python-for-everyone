@@ -6,7 +6,7 @@ ARG DEBIAN_VERSION=slim-bookworm
 
 FROM docker.io/python:${PYTHON_VERSION}-${DEBIAN_VERSION}
 
-RUN apt update -y && apt install -y wget tree && apt clean -y
+RUN apt update -y && apt install -y wget tree pandoc texlive-xetex && apt clean -y
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
