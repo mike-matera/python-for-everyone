@@ -10,14 +10,9 @@ dependencies = [
     "jupyterhub>=5.3.0",
     "jupyterlab>=4.4.3",
     "matplotlib>=3.10.3",
-    "nbquiz",
-    "nbtest",
     "notebook>=7.4.3",
     "pandas>=2.2.3",
     "requests>=2.32.3",
+    "nb-unittest",
+    "nb-canvas-quiz",
 ]
-
-[tool.uv.sources]
-jupyter-turtle = { path = "libs/jupyter_turtle" }
-nbtest = { path = "libs/nbtest" }
-nbquiz = { path = "libs/nbquiz" }

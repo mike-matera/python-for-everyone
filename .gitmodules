@@ -1,9 +1,0 @@
-[submodule "Modules/nbtest"]
-	path = libs/nbtest
-	url = ../nbtest.git
-[submodule "Modules/nbquiz"]
-	path = libs/nbquiz
-	url = ../nbquiz.git
-[submodule "Modules/jupyter_turtle"]
-	path = libs/jupyter_turtle
-	url = ../jupyter_turtle.git
