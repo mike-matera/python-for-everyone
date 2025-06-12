@@ -1,5 +1,5 @@
 [project]
-name = "python_for_everyone"
+name = "python-for-everyone"
 version = "1.0.0"
 description = "Jupyter Notebooks for Learning Python"
 readme = "README.md"
