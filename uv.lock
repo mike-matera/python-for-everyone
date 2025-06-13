@@ -907,15 +907,15 @@ wheels = [
 
 [[package]]
 name = "jupyter-turtle"
-version = "1.0.1"
+version = "1.0.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ipycanvas" },
     { name = "jupyterlab" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/16/ec/a346c8513a77ef2d72bbe2821bc95fb189c2f71d218c7ecf1496c72c3794/jupyter_turtle-1.0.1.tar.gz", hash = "sha256:e68bf0fdbbf1583b2fe6f3972fbbe8a92e8c240a881922f141af63fb1b926749", size = 12408 }
+sdist = { url = "https://files.pythonhosted.org/packages/7a/8d/afc0375185ab7e9e4018a5bdad481caf17cc2b964d5a9aef61df0d1f9723/jupyter_turtle-1.0.2.tar.gz", hash = "sha256:383994296e45a530c0dad685bc16e35c826667c47bc6032d75dbe3615eebe859", size = 12356 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/07/59/d54a514385bce30949e0cc4afdbb258c6ced7cc5ec7a44d756712f6b9bea/jupyter_turtle-1.0.1-py3-none-any.whl", hash = "sha256:3e20e779fba02a98eda70907c844e6f67392ed2b06333403145ed64e3af2f308", size = 11820 },
+    { url = "https://files.pythonhosted.org/packages/5b/62/92d853c05fe0279d3e2013d38843cae9abe8d8e45c3b37a828e7143c42c6/jupyter_turtle-1.0.2-py3-none-any.whl", hash = "sha256:8a796700a166bb9a41cbb7b4528eb475d2b20df7fb1d3ac610adaeffc68c08eb", size = 11820 },
 ]
 
 [[package]]
@@ -1243,7 +1243,7 @@ wheels = [
 
 [[package]]
 name = "nb-canvas-quiz"
-version = "0.4.0"
+version = "0.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cssutils" },
@@ -1260,9 +1260,9 @@ dependencies = [
     { name = "requests" },
     { name = "yamale" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0f/70/991c4b8ac202048b10cbb4104d4898037c873fe126332806ca8b4a74c34b/nb_canvas_quiz-0.4.0.tar.gz", hash = "sha256:303382647a4c73ef0d08a14bb9d718b92e07412ccfbb854f7bb6ba28e0df6f0d", size = 27002 }
+sdist = { url = "https://files.pythonhosted.org/packages/87/65/f7fb1b456b4f148c80a0990d671379d10c9cc6cf192cc3ef413cb91b697f/nb_canvas_quiz-0.5.1.tar.gz", hash = "sha256:31dfdae79b66f0d6c51a362928cf70d11a90cc7ac095989ab8ae9553a4c4c01e", size = 27276 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1a/9a/cf2894353131d2c3cda987bcb5927ce28ded6594f87e5c6630436c9b08fc/nb_canvas_quiz-0.4.0-py3-none-any.whl", hash = "sha256:eb9c317535ef28cde27f650ba93c5d98ded8ea3a1c9b93571c8da9b80ee77f6f", size = 31390 },
+    { url = "https://files.pythonhosted.org/packages/d5/a7/86ae846ed0b1b29b940a29ce13caabbb93dfabb41c9bc57d623f6e393f02/nb_canvas_quiz-0.5.1-py3-none-any.whl", hash = "sha256:d91d6b24f6882c52e9c1c07519895c689f8089ae501756c75bdf8a2615273385", size = 31893 },
 ]
 
 [[package]]
@@ -1746,12 +1746,12 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "ipycanvas", specifier = ">=0.13.3" },
-    { name = "jupyter-turtle" },
+    { name = "jupyter-turtle", specifier = ">=1.0.2" },
     { name = "jupyterhub", specifier = ">=5.3.0" },
     { name = "jupyterlab", specifier = ">=4.4.3" },
     { name = "matplotlib", specifier = ">=3.10.3" },
-    { name = "nb-canvas-quiz" },
-    { name = "nb-unittest" },
+    { name = "nb-canvas-quiz", specifier = ">=0.5.1" },
+    { name = "nb-unittest", specifier = ">=1.0.2" },
     { name = "notebook", specifier = ">=7.4.3" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "requests", specifier = ">=2.32.3" },
