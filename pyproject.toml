@@ -15,4 +15,5 @@ dependencies = [
     "requests>=2.32.3",
     "nb-unittest>=1.0.2",
     "nb-canvas-quiz>=0.5.1",
+    "nbgitpuller>=1.2.2",
 ]

@@ -1335,6 +1335,19 @@ wheels = [
 ]
 
 [[package]]
+name = "nbgitpuller"
+version = "1.2.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jupyter-server" },
+    { name = "tornado" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c6/69/2a633c33209df7fa6909f19a8a44e4db417b5705c00a28650b33622a0580/nbgitpuller-1.2.2.tar.gz", hash = "sha256:3a3dfe985642738ac01acba29e6703a2cd2468dd768b6f004eb74e836d22515d", size = 324148 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/01/0a/0b4a7c22c0cac8c2edd6e69f5e5feb60edc0edf119cb313639ab1ec09f40/nbgitpuller-1.2.2-py2.py3-none-any.whl", hash = "sha256:19a6839928aabdb38383f05298889d407c872e392259b933cb5ddd31e4b22c6e", size = 317079 },
+]
+
+[[package]]
 name = "nest-asyncio"
 version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1763,6 +1776,7 @@ dependencies = [
     { name = "matplotlib" },
     { name = "nb-canvas-quiz" },
     { name = "nb-unittest" },
+    { name = "nbgitpuller" },
     { name = "notebook" },
     { name = "pandas" },
     { name = "requests" },
@@ -1777,6 +1791,7 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.10.3" },
     { name = "nb-canvas-quiz", specifier = ">=0.5.1" },
     { name = "nb-unittest", specifier = ">=1.0.2" },
+    { name = "nbgitpuller", specifier = ">=1.2.2" },
     { name = "notebook", specifier = ">=7.4.3" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "requests", specifier = ">=2.32.3" },
