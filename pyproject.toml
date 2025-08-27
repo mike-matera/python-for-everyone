@@ -17,3 +17,6 @@ dependencies = [
     "nb-canvas-quiz>=0.5.1",
     "nbgitpuller>=1.2.2",
 ]
+
+[tool.setuptools.packages.find]
+where = []
