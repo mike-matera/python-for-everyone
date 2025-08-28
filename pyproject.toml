@@ -14,7 +14,7 @@ dependencies = [
     "pandas>=2.2.3",
     "requests>=2.32.3",
     "nb-unittest>=1.0.2",
-    "nb-canvas-quiz>=0.5.1",
+    "nb-canvas-quiz>=0.5.3",
     "nbgitpuller>=1.2.2",
 ]
 

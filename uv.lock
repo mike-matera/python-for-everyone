@@ -1378,7 +1378,7 @@ wheels = [
 
 [[package]]
 name = "nb-canvas-quiz"
-version = "0.5.2"
+version = "0.5.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cssutils" },
@@ -1395,9 +1395,9 @@ dependencies = [
     { name = "requests" },
     { name = "yamale" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/de/01/5fd653a84c784852da8f798188f6e55ee097996bc02aa30e5eb66cbdad22/nb_canvas_quiz-0.5.2.tar.gz", hash = "sha256:3ce94524070df5199f0a6add0d59719f062387a5b1577c1d5d89ee52ade7b3a4", size = 27338 }
+sdist = { url = "https://files.pythonhosted.org/packages/8b/8b/585edff26c298659fbf8aff7fc4ea97a02d5d2474d3a74d9d84d48a60084/nb_canvas_quiz-0.5.3.tar.gz", hash = "sha256:45aa8971fa0cf8b76ce0c35449aec9728bd4e41c1f63cdc4926aff53d22c2f33", size = 27768 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/47/72/e3705f0dd113e3de72473e0975a80b13c952b7043dbfcbe23f20817f9439/nb_canvas_quiz-0.5.2-py3-none-any.whl", hash = "sha256:14129a97daed1f4667a3606c84f847e7b93df9340ed0da9da235c61adcad8890", size = 31897 },
+    { url = "https://files.pythonhosted.org/packages/31/3c/c5afefd322e0811066873be72b6174b06af2e66cfd950d0f714bf91af14e/nb_canvas_quiz-0.5.3-py3-none-any.whl", hash = "sha256:df9d1467606c23f2a5c55b1be34b5d051098409a082fde9fd6bd3b14471a0468", size = 32006 },
 ]
 
 [[package]]
@@ -1946,7 +1946,7 @@ requires-dist = [
     { name = "jupyterhub", specifier = ">=5.3.0" },
     { name = "jupyterlab", specifier = ">=4.4.6" },
     { name = "matplotlib", specifier = ">=3.10.3" },
-    { name = "nb-canvas-quiz", specifier = ">=0.5.1" },
+    { name = "nb-canvas-quiz", specifier = ">=0.5.3" },
     { name = "nb-unittest", specifier = ">=1.0.2" },
     { name = "nbgitpuller", specifier = ">=1.2.2" },
     { name = "notebook", specifier = ">=7.4.3" },
