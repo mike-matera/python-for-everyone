@@ -6,9 +6,9 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "ipycanvas>=0.13.3",
-    "jupyter-turtle>=1.0.2",
+    "jupyter-turtle>=1.0.4",
     "jupyterhub>=5.3.0",
-    "jupyterlab==4.4.10",
+    "jupyterlab>=4.4.10",
     "matplotlib>=3.10.3",
     "notebook>=7.4.3",
     "pandas>=2.2.3",
